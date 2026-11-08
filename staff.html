@@ -59,6 +59,7 @@ details.panel summary{cursor:pointer}
 .xbox{border-top:1px dashed var(--line);padding-top:10px;display:grid;gap:10px}
 .savebar2{position:sticky;bottom:0;background:var(--bg);padding-block:10px calc(10px + env(safe-area-inset-bottom,0px));display:flex;gap:10px}.savebar2 .btn{flex:1;padding:12px}
 .danger{border-color:var(--warn);color:var(--warn)}
+.capi{border-top:1px dashed var(--line);padding-top:12px;display:grid;gap:10px}
 .menu-btn{border:0;background:none;padding:6px;color:var(--fg);display:grid;place-items:center;border-radius:8px}
 .scrim{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:9}
 .drawer{position:fixed;top:0;bottom:0;right:0;width:min(290px,84vw);background:var(--surface);border-left:1px solid var(--line);z-index:10;transform:translateX(105%);transition:transform .22s ease;padding:calc(14px + env(safe-area-inset-top,0px)) 12px 14px;display:flex;flex-direction:column;gap:4px;overflow-y:auto}
@@ -223,6 +224,7 @@ function productsInput(t){var d=S.draft;
   if(t.dataset.op!=null){var name=vtOf(d)==="model"&&xi==null?modelOpts(d)[k]:String(list[k]||"").trim();if(!name)return true;var n=parseFloat(t.value);if(n>0)pr[name]=n;else delete pr[name];return true}
   return false}
 
+async function loadCapi(){var a=await sb.rpc("secret_status",{k:"fb_capi_token"});S.capi=a.data||{};var b=await sb.rpc("capi_last");S.capiLast=b.data||{}}
 async function loadSettings(){var r=await sb.from("settings").select("data").eq("id",1).maybeSingle();S.settings=(r.data&&r.data.data)||{};if(!Array.isArray(S.settings.cats)||!S.settings.cats.length)S.settings.cats=["الورود الاصطناعية"]}
 async function saveSettingsPatch(patch){await loadSettings();Object.assign(S.settings,patch);var r=await sb.from("settings").upsert({id:1,data:S.settings,updated_at:new Date().toISOString()});return r.error}
 function funnelsView(){if(!S.settings)return '<main class="wrap page"><div class="empty">جارٍ التحميل…</div></main>';var px=S.settings.fbPixel||"",on=!!px&&S.settings.fbPixelOn!==false;
@@ -233,6 +235,12 @@ function funnelsView(){if(!S.settings)return '<main class="wrap page"><div class
   '<label class="sw"><input type="checkbox" id="fbon"'+(S.settings.fbPixelOn===false?"":" checked")+'><span>تفعيل البيكسل في المتجر</span></label>'+
   (S.perr?'<div class="err">'+esc(S.perr)+'</div>':'')+
   '<button class="btn btn-main" data-act="pxsave">حفظ</button>'+
+  '<div class="capi"><h2 style="font-size:16px">Conversions API (الإرسال من الخادم)</h2><p class="meta" style="margin:0">يرسل كل طلبية إلى فيسبوك من الخادم مباشرة، حتى لو كان عند الزبون مانع إعلانات أو آيفون. الـ Token يُحفظ مخفياً: لا يظهر لأحد، ولا حتى هنا.</p>'+
+  (S.capi&&S.capi.set?'<div class="note">🔒 الـ Token محفوظ ومخفي (ينتهي بـ <b dir="ltr">••••'+esc(S.capi.tail)+'</b>)'+(S.capi.updated_at?' · '+when(S.capi.updated_at):'')+'</div>':'')+
+  '<label class="f">'+(S.capi&&S.capi.set?"استبدال الـ Token":"Access Token")+'<input id="fbtok" type="password" autocomplete="off" dir="ltr" placeholder="الصق الـ Token هنا"></label>'+
+  '<label class="f">رمز اختبار الأحداث (اختياري)<input id="fbtest" dir="ltr" placeholder="TEST12345" value="'+esc(S.settings.fbTestCode||"")+'"></label><span class="meta">ضعه فقط أثناء التجربة من صفحة Test events، ثم امسحه.</span>'+
+  '<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-main" data-act="toksave">حفظ</button>'+(S.capi&&S.capi.set?'<button class="btn danger" data-act="tokdel">حذف الـ Token</button>':'')+'</div>'+
+  (S.capiLast&&S.capiLast.order_id?'<div class="meta">آخر إرسال: طلبية #'+esc(S.capiLast.order_id)+' · '+(S.capiLast.status===200?'✅ وصلت إلى فيسبوك':S.capiLast.status?'⚠️ رفضها فيسبوك ('+esc(S.capiLast.status)+'): <span dir="ltr">'+esc(S.capiLast.body||"")+'</span>':'⏳ قيد الإرسال')+'</div>':'')+'</div>'+
   '<details><summary class="meta">الأحداث التي تُرسل إلى فيسبوك</summary><div class="kv" style="margin-top:8px"><b>PageView</b><span>عند فتح المتجر</span><b>ViewContent</b><span>عند تصفّح تصنيف</span><b>AddToCart</b><span>عند الإضافة إلى السلة، مع المبلغ</span><b>InitiateCheckout</b><span>عند فتح السلة</span><b>Purchase</b><span>عند إرسال الطلبية، مع المبلغ ورقم الطلبية</span></div></details>'+
   '<details><summary class="meta">من أين أحصل على معرّف البيكسل؟</summary><ol class="meta" style="margin:8px 0 0;padding-inline-start:20px"><li>افتح <b>Meta Events Manager</b> (business.facebook.com/events_manager).</li><li>اختر البيكسل أو أنشئ واحداً: <b>Connect data sources ← Web</b>.</li><li>انسخ الرقم الطويل تحت اسمه (15 أو 16 رقماً) والصقه هنا.</li></ol></details></section>'+
   '<section class="panel soon">'+ico("funnels")+'<b>قريباً في هذا القسم</b><p class="meta" style="margin:0">صفحات بيع خاصة لمنتج أو عرض، وروابط لكل قناة (تلغرام، فيسبوك، إنستغرام) لتعرف من أين يأتي الزبائن، وبيكسل تيك توك.</p></section></main>'}
@@ -254,9 +262,13 @@ app.addEventListener("click",async function(e){var b=e.target.closest("[data-act
   else if(a==="logout"){await sb.auth.signOut();S.user=null;S.me=null;S.open=null;render()}
   else if(a==="reload"){await boot()}
   else if(a==="tab"){S.tab=b.dataset.v;render()}
-  else if(a==="view"){S.view=b.dataset.v;S.open=null;S.menu=false;S.draft=null;if(S.view==="users")await loadStaff();render();if(S.view==="products"&&!S.products){await loadProducts();render()}if(S.view==="funnels"){await loadSettings();render()}scrollTo(0,0)}
+  else if(a==="view"){S.view=b.dataset.v;S.open=null;S.menu=false;S.draft=null;if(S.view==="users")await loadStaff();render();if(S.view==="products"&&!S.products){await loadProducts();render()}if(S.view==="funnels"){await loadSettings();await loadCapi();render()}scrollTo(0,0)}
   else if(a==="menu"){S.menu=!S.menu;render()}
   else if(isOwner()&&S.view==="products"&&await productsClick(a,b)){}
+  else if(a==="toksave"){var tv=document.getElementById("fbtok").value.trim(),tc=document.getElementById("fbtest").value.trim();
+    if(tv){if(tv.length<40){toast("هذا لا يبدو Token صحيحاً، تأكد أنك نسخته كاملاً");return}var r1=await sb.rpc("set_secret",{k:"fb_capi_token",v:tv});if(r1.error){toast("تعذّر الحفظ: "+r1.error.message);return}}
+    var e2=await saveSettingsPatch({fbTestCode:tc});if(e2){toast("تعذّر الحفظ");return}await loadCapi();render();toast(tv?"حُفظ الـ Token وهو مخفي":"حُفظ")}
+  else if(a==="tokdel"){var r2=await sb.rpc("set_secret",{k:"fb_capi_token",v:""});if(r2.error){toast("تعذّر الحذف");return}await loadCapi();render();toast("حُذف الـ Token")}
   else if(a==="pxsave"){var v=document.getElementById("fbpx").value.replace(/\D/g,""),on=document.getElementById("fbon").checked;S.perr="";if(v&&(v.length<14||v.length>17)){S.perr="معرّف البيكسل يجب أن يكون رقماً من 15 أو 16 خانة";render();return}var er=await saveSettingsPatch({fbPixel:v,fbPixelOn:on});if(er){toast("تعذّر الحفظ: "+er.message);return}render();toast(v?(on?"حُفظ البيكسل وهو يعمل الآن في المتجر":"حُفظ البيكسل (موقوف)"):"أُزيل البيكسل")}
   else if(a==="open"){S.open=+b.dataset.id;render();scrollTo(0,0)}
   else if(a==="back"){S.open=null;render()}

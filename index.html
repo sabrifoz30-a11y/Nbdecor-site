@@ -179,7 +179,7 @@ label.f{display:grid;gap:5px;font-size:13.5px;font-weight:500;min-width:0}
 <div id="app" dir="rtl" lang="ar"><div class="boot">جارٍ تحميل المنتجات…</div></div>
 <script type="application/json" id="shop-data">{}</script>
 <script>
-function nbTrack(ev,p){try{if(window.fbq)fbq("track",ev,p||{})}catch(e){}}
+function nbTrack(ev,p,o){try{if(window.fbq)fbq("track",ev,p||{},o||{})}catch(e){}}
 var SB_URL="https://zlrqyramobfdyqikugut.supabase.co",SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpscnF5cmFtb2JmZHlxaWt1Z3V0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQxNTI5MTMsImV4cCI6MjEwOTcyODkxM30.fysYQOBxWIux6n1VDVvFpciXZg5-9FoWM29RKf-GrGI";
 (async function(){
   var h={"apikey":SB_KEY,"Authorization":"Bearer "+SB_KEY};
@@ -498,7 +498,7 @@ async function placeOrder(){
   try{var r=await fetch(SB_URL+"/rest/v1/rpc/place_order",{method:"POST",headers:{"apikey":SB_KEY,"Authorization":"Bearer "+SB_KEY,"Content-Type":"application/json"},body:JSON.stringify({customer:customer,items:items})});
     if(!r.ok)throw new Error(await r.text());var no=await r.json();
     S.lastOrder={no:no,name:customer.name,phone:customer.phone,wilaya:w,total:cartTotal(),items:items};
-    nbTrack("Purchase",{value:S.lastOrder.total,currency:"DZD",content_ids:items.map(function(i){return i.ref}),content_type:"product",num_items:items.reduce(function(s,i){return s+i.qty},0),order_id:String(no)});cart=[];saveCart();placing=false;S.view="thanks";render();window.scrollTo(0,0);
+    nbTrack("Purchase",{value:S.lastOrder.total,currency:"DZD",content_ids:items.map(function(i){return i.ref}),content_type:"product",num_items:items.reduce(function(s,i){return s+i.qty},0),order_id:String(no)},{eventID:"order-"+no});cart=[];saveCart();placing=false;S.view="thanks";render();window.scrollTo(0,0);
   }catch(err){placing=false;if(a){a.removeAttribute("aria-disabled");a.textContent="أرسل الطلبية"}var f=document.getElementById("sendfail");if(f)f.hidden=false;toast("تعذّر إرسال الطلبية، تحقق من الإنترنت وأعد المحاولة")}
 }
 function thanksView(){var o=S.lastOrder||{};
