@@ -122,7 +122,7 @@ function waNum(p){var d=String(p||"").replace(/\D/g,"");if(d.charAt(0)==="0")d="
 function homeView(){var c=counts(),today=S.orders.filter(function(o){return new Date(o.created_at).toDateString()===new Date().toDateString()});
   return '<main class="wrap page"><h1>لوحة التحكم</h1><div class="stats"><div class="stat"><span>طلبات اليوم</span><b>'+today.length+'</b></div><div class="stat"><span>جديدة تنتظر</span><b>'+(c["new"]||0)+'</b></div><div class="stat"><span>مؤكدة</span><b>'+(c.confirmed||0)+'</b></div><div class="stat"><span>مبيعات اليوم</span><b>'+fmt(today.reduce(function(s,o){return s+(+o.total||0)},0))+'</b></div></div>'+
   '<div class="tiles">'+NAV.slice(1).map(function(n){return '<button class="tile" data-act="view" data-v="'+n[0]+'">'+ico(n[0])+'<span>'+n[1]+'</span>'+(SOON[n[0]]?'<small>قريباً</small>':'')+'</button>'}).join("")+'</div></main>'}
-var SOON={funnels:"صفحات بيع خاصة لمنتج أو عرض معيّن، وروابط لكل قناة (تلغرام، فيسبوك، إنستغرام) لتعرف من أين يأتي الزبائن.",shipping:"شركات التوصيل، أسعار التوصيل لكل ولاية (منزل ومكتب)، وأرقام التتبع.",tools:"تقسيم الطلبيات، صورة ملخص الطلبية، القائمة السوداء للأرقام، والإحصائيات.",settings:"اسم المتجر، رقم الواتساب، رسالة أعلى المتجر، وطريقة كتابة السعر."};
+var SOON={shipping:"شركات التوصيل، أسعار التوصيل لكل ولاية (منزل ومكتب)، وأرقام التتبع.",tools:"تقسيم الطلبيات، صورة ملخص الطلبية، القائمة السوداء للأرقام، والإحصائيات.",settings:"اسم المتجر، رقم الواتساب، رسالة أعلى المتجر، وطريقة كتابة السعر."};
 /* ===== products section ===== */
 var VT={color:"اللون",model:"الموديل",size:"الحجم",custom:"يدوي"},XT={color:"اللون",size:"الحجم",custom:"يدوي"};
 var COLORS={"أحمر":"#C62F3C","أبيض":"#FFFFFF","وردي":"#F2A7BB","زهري":"#F2A7BB","أصفر":"#F2CF3E","أزرق":"#4A74C9","بنفسجي":"#8B5BB8","موف":"#B48CC4","برتقالي":"#EE8A2F","أخضر":"#4F9A5A","بيج":"#E3D2B5","كريمي":"#F3E9D2","أسود":"#222222","ذهبي":"#C9A44A","فضي":"#BFC3C7","فوشيا":"#D63384","خوخي":"#F5B38A","رمادي":"#9A9A9A"};
@@ -223,9 +223,22 @@ function productsInput(t){var d=S.draft;
   if(t.dataset.op!=null){var name=vtOf(d)==="model"&&xi==null?modelOpts(d)[k]:String(list[k]||"").trim();if(!name)return true;var n=parseFloat(t.value);if(n>0)pr[name]=n;else delete pr[name];return true}
   return false}
 
+async function loadSettings(){var r=await sb.from("settings").select("data").eq("id",1).maybeSingle();S.settings=(r.data&&r.data.data)||{};if(!Array.isArray(S.settings.cats)||!S.settings.cats.length)S.settings.cats=["الورود الاصطناعية"]}
+async function saveSettingsPatch(patch){await loadSettings();Object.assign(S.settings,patch);var r=await sb.from("settings").upsert({id:1,data:S.settings,updated_at:new Date().toISOString()});return r.error}
+function funnelsView(){if(!S.settings)return '<main class="wrap page"><div class="empty">جارٍ التحميل…</div></main>';var px=S.settings.fbPixel||"",on=!!px&&S.settings.fbPixelOn!==false;
+  return '<main class="wrap page"><h1>مسارات البيع</h1>'+
+  '<section class="panel"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><h2>بيكسل فيسبوك (Meta Pixel)</h2><span class="pill '+(on?"confirmed":"")+'">'+(on?"مفعّل":"غير مفعّل")+'</span></div>'+
+  '<p class="meta" style="margin:0">يربط متجرك بإعلانات فيسبوك وإنستغرام، فيعرف فيسبوك من زار المتجر ومن اشترى، ويحسّن إعلاناتك ويقيس نتائجها.</p>'+
+  '<label class="f">معرّف البيكسل (Pixel ID)<input id="fbpx" inputmode="numeric" dir="ltr" placeholder="مثلاً 123456789012345" value="'+esc(px)+'"></label>'+
+  '<label class="sw"><input type="checkbox" id="fbon"'+(S.settings.fbPixelOn===false?"":" checked")+'><span>تفعيل البيكسل في المتجر</span></label>'+
+  (S.perr?'<div class="err">'+esc(S.perr)+'</div>':'')+
+  '<button class="btn btn-main" data-act="pxsave">حفظ</button>'+
+  '<details><summary class="meta">الأحداث التي تُرسل إلى فيسبوك</summary><div class="kv" style="margin-top:8px"><b>PageView</b><span>عند فتح المتجر</span><b>ViewContent</b><span>عند تصفّح تصنيف</span><b>AddToCart</b><span>عند الإضافة إلى السلة، مع المبلغ</span><b>InitiateCheckout</b><span>عند فتح السلة</span><b>Purchase</b><span>عند إرسال الطلبية، مع المبلغ ورقم الطلبية</span></div></details>'+
+  '<details><summary class="meta">من أين أحصل على معرّف البيكسل؟</summary><ol class="meta" style="margin:8px 0 0;padding-inline-start:20px"><li>افتح <b>Meta Events Manager</b> (business.facebook.com/events_manager).</li><li>اختر البيكسل أو أنشئ واحداً: <b>Connect data sources ← Web</b>.</li><li>انسخ الرقم الطويل تحت اسمه (15 أو 16 رقماً) والصقه هنا.</li></ol></details></section>'+
+  '<section class="panel soon">'+ico("funnels")+'<b>قريباً في هذا القسم</b><p class="meta" style="margin:0">صفحات بيع خاصة لمنتج أو عرض، وروابط لكل قناة (تلغرام، فيسبوك، إنستغرام) لتعرف من أين يأتي الزبائن، وبيكسل تيك توك.</p></section></main>'}
 function soonView(k){var n=NAV.find(function(x){return x[0]===k});return '<main class="wrap page"><h1>'+n[1]+'</h1><div class="panel soon">'+ico(k)+'<b>هذا القسم قيد التجهيز</b><p class="muted" style="margin:0">'+SOON[k]+'</p></div></main>'}
 function staffView(){return '<main class="wrap page"><h1>المستخدمين</h1><div class="note">يدخل العامل إلى هذه الصفحة وينشئ حساباً، ثم تختار له دوره هنا.</div><div class="panel">'+(S.staff.length?S.staff.map(function(u){return '<div class="staff"><div><b>'+esc(u.name)+'</b><div class="meta" dir="ltr" style="text-align:right">'+esc(u.phone||"")+'</div></div>'+(u.id===S.user.id?'<span class="pill confirmed">'+ROLE[u.role]+'</span>':'<select data-role="'+u.id+'" aria-label="دور '+esc(u.name)+'">'+Object.keys(ROLE).map(function(r){return '<option value="'+r+'"'+(u.role===r?" selected":"")+'>'+ROLE[r]+'</option>'}).join("")+'</select>')+'</div>'}).join(""):'<div class="empty">لا يوجد عمال بعد.</div>')+'</div></main>'}
-function render(){var body;if(!S.user)body=loginView();else if(!S.me||S.me.role==="pending")body=pendingView();else if(!isOwner()&&S.view!=="orders"){S.view="orders";body=S.open?orderView():ordersView()}else if(S.view==="home")body=homeView();else if(S.view==="users")body=staffView();else if(S.view==="products")body=productsView();else if(SOON[S.view])body=soonView(S.view);else if(S.open)body=orderView();else body=ordersView();app.innerHTML=top()+body}
+function render(){var body;if(!S.user)body=loginView();else if(!S.me||S.me.role==="pending")body=pendingView();else if(!isOwner()&&S.view!=="orders"){S.view="orders";body=S.open?orderView():ordersView()}else if(S.view==="home")body=homeView();else if(S.view==="users")body=staffView();else if(S.view==="products")body=productsView();else if(S.view==="funnels")body=funnelsView();else if(SOON[S.view])body=soonView(S.view);else if(S.open)body=orderView();else body=ordersView();app.innerHTML=top()+body}
 async function loadMe(){var r=await sb.from("profiles").select("*").eq("id",S.user.id).maybeSingle();S.me=r.data}
 async function loadOrders(){var r=await sb.from("orders").select("*").order("id",{ascending:false}).limit(500);if(!r.error)S.orders=r.data||[]}
 async function loadStaff(){var r=await sb.from("profiles").select("*").order("created_at");if(!r.error)S.staff=r.data||[]}
@@ -241,9 +254,10 @@ app.addEventListener("click",async function(e){var b=e.target.closest("[data-act
   else if(a==="logout"){await sb.auth.signOut();S.user=null;S.me=null;S.open=null;render()}
   else if(a==="reload"){await boot()}
   else if(a==="tab"){S.tab=b.dataset.v;render()}
-  else if(a==="view"){S.view=b.dataset.v;S.open=null;S.menu=false;S.draft=null;if(S.view==="users")await loadStaff();render();if(S.view==="products"&&!S.products){await loadProducts();render()}scrollTo(0,0)}
+  else if(a==="view"){S.view=b.dataset.v;S.open=null;S.menu=false;S.draft=null;if(S.view==="users")await loadStaff();render();if(S.view==="products"&&!S.products){await loadProducts();render()}if(S.view==="funnels"){await loadSettings();render()}scrollTo(0,0)}
   else if(a==="menu"){S.menu=!S.menu;render()}
   else if(isOwner()&&S.view==="products"&&await productsClick(a,b)){}
+  else if(a==="pxsave"){var v=document.getElementById("fbpx").value.replace(/\D/g,""),on=document.getElementById("fbon").checked;S.perr="";if(v&&(v.length<14||v.length>17)){S.perr="معرّف البيكسل يجب أن يكون رقماً من 15 أو 16 خانة";render();return}var er=await saveSettingsPatch({fbPixel:v,fbPixelOn:on});if(er){toast("تعذّر الحفظ: "+er.message);return}render();toast(v?(on?"حُفظ البيكسل وهو يعمل الآن في المتجر":"حُفظ البيكسل (موقوف)"):"أُزيل البيكسل")}
   else if(a==="open"){S.open=+b.dataset.id;render();scrollTo(0,0)}
   else if(a==="back"){S.open=null;render()}
   else if(a==="setst"){var id=+b.dataset.id,v=document.getElementById("st-sel").value,o=S.orders.find(function(x){return x.id===id});var h=(o.history||[]).concat([{at:new Date().toISOString(),what:v,by:S.me.name}]);
