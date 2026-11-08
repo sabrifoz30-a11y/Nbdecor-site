@@ -102,6 +102,15 @@ label.f{display:grid;gap:5px;font-size:13.5px;font-weight:500;min-width:0}
 .savebar .in{max-width:1180px;margin:0 auto;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
 .upload{border:2px dashed var(--line);border-radius:14px;padding:22px;text-align:center;display:grid;gap:8px;justify-items:center;background:var(--bg)}
 .small{font-size:13px}
+.mq{display:grid;gap:6px}
+.mqr{display:grid;grid-template-columns:minmax(0,1fr) 132px;gap:8px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:4px 4px 4px 8px;background:var(--surface)}
+.mqr.on{border-color:var(--leaf);background:var(--petal-soft)}
+.mql{display:flex;align-items:center;gap:7px;border:0;background:none;padding:4px 6px;text-align:start;min-width:0}
+.mql span{overflow-wrap:anywhere}.mql small{color:var(--muted);font-size:12px;margin-inline-start:auto;white-space:nowrap}
+.mql i{width:14px;height:14px;border-radius:50%;border:1px solid rgba(0,0,0,.18);flex-shrink:0}
+.mq.need .mqr{border-color:var(--warn)}
+.stp button{width:38px}
+.mqsum{font-size:14px;color:var(--fg);background:var(--sunk);border-radius:10px;padding:6px 10px}
 .xlab{font-size:12.5px;color:var(--muted);align-self:center}
 .xbox{border-top:1px dashed var(--line);padding-top:10px;display:grid;gap:10px}
 .addvar{justify-self:stretch;justify-content:center;color:var(--leaf);border:2px dashed var(--leaf);background:none;font-weight:600}
@@ -273,7 +282,20 @@ function header(){
   (S.admin?'<button class="btn btn-sm" data-act="go" data-v="'+(S.view==="admin"?"shop":"admin")+'">'+(S.view==="admin"?"عرض المتجر":"لوحة التاجر")+'</button>':'')+
   '<button class="btn" data-act="go" data-v="cart" aria-label="السلة">السلة <span class="count" id="cc">'+cartCount()+'</span></button></div></div></header>';
 }
+function mqMode(p){return options(p).length>=2&&!xdims(p).some(function(d){return xOpts(d).length})}
+function mqTotal(p,m){var q=0,t=0;Object.keys(m||{}).forEach(function(o){var n=+m[o]||0;if(n>0){q+=n;t+=n*priceOf(p,o)}});return{q:q,t:t}}
+function mqCard(p){var sel=S.sel[p.id]||{m:{}},m=sel.m||{},cols=options(p),tt=mqTotal(p,m);
+  return '<article class="card" data-card="'+p.id+'">'+gallery(p,0)+'<div class="body">'+
+  '<div class="info"><span class="ref">'+esc(p.ref)+'</span><span class="price" data-price="'+p.id+'">'+cardPriceText(p,"",{})+'</span></div>'+(p.stems>0?'<span class="small muted">عدد الورد: '+p.stems+'</span>':'')+
+  '<div class="mq'+(S.need[p.id]?' need':'')+'" role="group" aria-label="الكمية لكل '+esc(kindWord(p))+'"><span class="xlab">اختر الكمية لكل '+esc(kindWord(p).replace(/^ال/,""))+':</span>'+cols.map(function(c){var n=+m[c]||0;return '<div class="mqr'+(n>0?' on':'')+'"><button class="mql" data-act="mqlook" data-id="'+p.id+'" data-c="'+esc(c)+'">'+(isColor(p)?'<i style="background:'+hex(c)+'"></i>':'')+'<span>'+esc(optLabel(p,c))+'</span>'+(priceRange0(p)?'<small>'+fmt(priceOf(p,c))+'</small>':'')+'</button><div class="step stp"><button data-act="mqinc" data-id="'+p.id+'" data-c="'+esc(c)+'" aria-label="زيادة '+esc(c)+'">+</button><input type="number" inputmode="numeric" min="0" value="'+n+'" data-mq="'+p.id+'" data-c="'+esc(c)+'" aria-label="كمية '+esc(c)+'"><button data-act="mqdec" data-id="'+p.id+'" data-c="'+esc(c)+'" aria-label="إنقاص '+esc(c)+'">−</button></div></div>'}).join("")+'</div>'+
+  '<div class="mqsum" data-mqsum="'+p.id+'"'+(tt.q?'':' hidden')+'>المختار: <b>'+tt.q+' قطعة</b> · <b>'+fmt(tt.t)+'</b></div>'+
+  '<button class="add" data-act="mqadd" data-id="'+p.id+'">أضف إلى السلة</button></div></article>'}
+function mqSync(id){var p=byId(id),card=document.querySelector('[data-card="'+id+'"]');if(!p||!card)return;var m=(S.sel[id]||{}).m||{};
+  card.querySelectorAll('[data-mq]').forEach(function(inp){var n=+m[inp.dataset.c]||0;if(document.activeElement!==inp)inp.value=n;inp.closest(".mqr").classList.toggle("on",n>0)});
+  var tt=mqTotal(p,m),sm=card.querySelector('[data-mqsum]');if(sm){sm.hidden=!tt.q;sm.innerHTML='المختار: <b>'+tt.q+' قطعة</b> · <b>'+fmt(tt.t)+'</b>'}
+  var g=card.querySelector('.mq');if(g)g.classList.toggle("need",!!S.need[id]&&!tt.q)}
 function card(p){
+  if(mqMode(p))return mqCard(p);
   var sel=S.sel[p.id]||{qty:1,color:"",x:{}};var cols=options(p);
   return '<article class="card" data-card="'+p.id+'">'+gallery(p,imgIndex(p,sel.color))+'<div class="body">'+
   '<div class="info"><span class="ref">'+esc(p.ref)+'</span><span class="price" data-price="'+p.id+'">'+cardPriceText(p,sel.color,sel.x)+'</span></div>'+(p.stems>0?'<span class="small muted">عدد الورد: '+p.stems+'</span>':'')+
@@ -423,6 +445,11 @@ app.addEventListener("click",function(e){
   if(act==="go"){S.view=b.dataset.v;render();window.scrollTo(0,0)}
   else if(act==="sort"){S.sort=b.dataset.v;render()}
   else if(act==="color"){sel.color=sel.color===b.dataset.c?"":b.dataset.c;delete S.need[id];syncCard(id);if(sel.color)galGo(id,imgIndex(byId(id),sel.color),true)}
+  else if(act==="mqinc"||act==="mqdec"){sel.m=sel.m||{};var mc=b.dataset.c;sel.m[mc]=Math.max(0,(+sel.m[mc]||0)+(act==="mqinc"?1:-1));if(act==="mqinc")galGo(id,imgIndex(byId(id),mc),true);mqSync(id)}
+  else if(act==="mqlook"){galGo(id,imgIndex(byId(id),b.dataset.c),true)}
+  else if(act==="mqadd"){var pm=byId(id),mm=sel.m||{},added=0;Object.keys(mm).forEach(function(o){var n=+mm[o]||0;if(n>0){var nl={id:id,color:o,qty:n,x:{}};var ex=cart.find(function(l){return lineKey(l)===lineKey(nl)});if(ex)ex.qty+=n;else cart.push(nl);added+=n}});
+    if(!added){S.need[id]=true;mqSync(id);bigAlert("اختر الكمية أولاً","اضغط + بجانب "+kindWord(pm)+" الذي تريده، ويمكنك اختيار أكثر من "+kindWord(pm).replace(/^ال/,"")+" معاً");return}
+    saveCart();S.sel[id]={m:{}};delete S.need[id];mqSync(id);syncCart();toast("أُضيف "+added+" قطعة من "+pm.ref+" إلى السلة")}
   else if(act==="xopt"){sel.x=sel.x||{};var xi=b.dataset.i;sel.x[xi]=sel.x[xi]===b.dataset.c?"":b.dataset.c;syncCard(id)}
   else if(act==="gal"){var g=document.querySelector('[data-gal="'+id+'"]');if(g){var cur=Math.round(g.scrollLeft/g.clientWidth);galGo(id,cur+(+b.dataset.d),true)}}
   else if(act==="cat"){S.cat=b.dataset.v;render()}
@@ -469,6 +496,7 @@ function selectText(){var o=document.getElementById("otext");if(!o)return;var r=
 app.addEventListener("input",function(e){
   var t=e.target;
   if(t.id==="q"){S.q=t.value;refreshGrid()}
+  else if(t.dataset.mq){var sq=S.sel[t.dataset.mq]=S.sel[t.dataset.mq]||{m:{}};sq.m=sq.m||{};sq.m[t.dataset.c]=Math.max(0,parseInt(t.value,10)||0);mqSync(t.dataset.mq)}
   else if(t.dataset.qty){var s=S.sel[t.dataset.qty]=S.sel[t.dataset.qty]||{qty:1,color:""};s.qty=Math.max(1,parseInt(t.value,10)||1)}
   else if(t.dataset.line){var v=parseInt(t.value,10);if(v>0){cartLines()[t.dataset.line].l.qty=v;saveCart();refreshSend()}}
   else if(t.dataset.f){form[t.dataset.f]=t.value;store("form",form);refreshSend()}
