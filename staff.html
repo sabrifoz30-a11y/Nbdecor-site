@@ -62,7 +62,7 @@ details.panel summary{cursor:pointer}
 .capi{border-top:1px dashed var(--line);padding-top:12px;display:grid;gap:10px}
 .pw{display:flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--bg);border-radius:10px;padding-inline-start:4px}.pw input{border:0!important;background:none!important;flex:1;min-width:0}.pw .x{text-decoration:none;font-size:18px;padding:6px 10px}
 .code{font-size:12px;border:1px solid var(--line);border-radius:6px;padding:1px 6px;margin-inline-start:6px;font-weight:400}
-.plat{display:grid;gap:2px;background:var(--ok-soft);border-radius:12px;padding:10px 14px}.plat b{color:var(--leaf);font-size:17px}
+.plats{display:grid;grid-template-columns:1fr 1fr;gap:8px}.plat{display:grid;gap:2px;text-align:start;background:var(--surface);border:2px solid var(--line);border-radius:12px;padding:10px 12px}.plat b{color:var(--leaf);font-size:17px}.plat[aria-checked="true"]{border-color:var(--leaf);background:var(--ok-soft)}
 .trybox{display:flex;align-items:center;gap:12px;background:var(--sunk);border:1px solid var(--line);border-radius:12px;padding:12px;flex-wrap:wrap}
 .ramas{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:12px;padding:12px;font-size:14px;line-height:1.7}.ramas input{width:20px;height:20px;margin-top:4px;accent-color:var(--leaf);flex-shrink:0}
 .menu-btn{border:0;background:none;padding:6px;color:var(--fg);display:grid;place-items:center;border-radius:8px}
@@ -268,16 +268,17 @@ var ECO=[["dhd","DHD Livraison","https://platform.dhd-dz.com",1],["anderson","An
 function shipData(){if(!S.settings.shipping)S.settings.shipping={};var sh=S.settings.shipping;sh.companies=sh.companies||[];return sh}
 function shippingView(){if(!S.settings)return '<main class="wrap page"><div class="empty">جارٍ التحميل…</div></main>';if(S.conn)return connectView();var sh=shipData();
   return '<main class="wrap page"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><h1>شركات الشحن</h1><button class="btn btn-main" data-act="connnew">+ اربط شركة توصيل</button></div>'+
-  (sh.companies.length?sh.companies.map(function(c){var st=S.secrets&&S.secrets[c.id];return '<section class="panel"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><div><h2>'+esc(c.nick||c.name)+'</h2>'+('<div class="meta" dir="ltr" style="text-align:right">Ecotrack · '+esc(hostName(c.base))+'</div>')+'</div>'+(sh.def===c.id?'<span class="pill confirmed">الافتراضية</span>':'<button class="btn btn-sm" data-act="shipdef" data-id="'+c.id+'">اجعلها الافتراضية</button>')+'</div>'+
+  (sh.companies.length?sh.companies.map(function(c){var st=S.secrets&&S.secrets[c.id];return '<section class="panel"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><div><h2>'+esc(c.nick||c.name)+'</h2>'+('<div class="meta" dir="ltr" style="text-align:right">'+(c.platform==="dhd"?"DHD":"Ecotrack")+' · '+esc(hostName(c.base))+'</div>')+'</div>'+(sh.def===c.id?'<span class="pill confirmed">الافتراضية</span>':'<button class="btn btn-sm" data-act="shipdef" data-id="'+c.id+'">اجعلها الافتراضية</button>')+'</div>'+
     '<div class="kv"><b>الربط</b><span>'+(st&&st.set?'🔒 مربوطة (Token مخفي ينتهي بـ <span dir="ltr">••••'+esc(st.tail)+'</span>)':'⚠️ غير مربوطة')+'</span><b>الرامساج</b><span>'+(c.ramassage?"مفعّل":"غير مفعّل")+'</span><b>أسعار التوصيل</b><span>'+(c.rates&&Object.keys(c.rates).length?Object.keys(c.rates).length+' ولاية':'تُجلب من الشركة بعد الربط')+'</span></div>'+
     '<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-sm" data-act="conntest" data-id="'+c.id+'">جرّب الاتصال</button><button class="btn btn-sm" data-act="connedit" data-id="'+c.id+'">تعديل</button><button class="btn btn-sm danger" data-act="conndel" data-id="'+c.id+'">'+(S.delShip===c.id?"تأكيد الفصل":"فصل الشركة")+'</button></div>'+
     (S.testRes&&S.testRes.id===c.id?'<div class="'+(S.testRes.ok?"note":"err")+'">'+esc(S.testRes.msg)+'</div>':'')+'</section>'}).join(""):'<div class="panel empty">لم تربط أي شركة توصيل بعد.<br>اضغط «+ اربط شركة توصيل».</div>')+'</main>'}
 function normBase(u){u=String(u||"").trim();if(!u)return"";if(!/^https?:\/\//i.test(u))u="https://"+u;try{var x=new URL(u);return "https://"+x.hostname.toLowerCase()}catch(e){return""}}
 function hostName(b){return String(b||"").replace(/^https:\/\//,"")}
-function connectView(){var c=S.conn;
+var PLAT={ecotrack:{name:"Ecotrack",sub:"المنصة التي تستعملها أغلب شركات التوصيل",base:""},dhd:{name:"DHD",sub:"DHD Livraison، رابطها مضبوط مسبقاً",base:"https://platform.dhd-dz.com"}};
+function connectView(){var c=S.conn,pl=c.platform==="dhd"?"dhd":"ecotrack";
   return '<main class="wrap page"><button class="x" data-act="connback">← رجوع</button><h1>اربط شركة توصيل</h1><section class="panel">'+
-  '<div class="plat"><b>Ecotrack</b><span class="meta">المنصة التي تستعملها أغلب شركات التوصيل في الجزائر</span></div>'+
-  '<label class="f">رابط المنصة<input id="c-base" dir="ltr" inputmode="url" autocomplete="off" placeholder="مثال: dhd.ecotrack.dz" value="'+esc(hostName(c.base||""))+'"></label><span class="meta">انسخه من شريط العنوان عندما تفتح لوحتك عند شركة التوصيل.</span>'+
+  '<div class="plats" role="radiogroup" aria-label="المنصة">'+Object.keys(PLAT).map(function(k){return '<button class="plat" role="radio" data-act="plat" data-v="'+k+'" aria-checked="'+(pl===k)+'"'+(c.id?" disabled":"")+'><b>'+PLAT[k].name+'</b><span class="meta">'+PLAT[k].sub+'</span></button>'}).join("")+'</div>'+
+  (pl==="ecotrack"?'<label class="f">رابط المنصة<input id="c-base" dir="ltr" inputmode="url" autocomplete="off" placeholder="مثال: anderson.ecotrack.dz" value="'+esc(hostName(c.base||""))+'"></label><span class="meta">انسخه من شريط العنوان عندما تفتح لوحتك عند شركة التوصيل.</span>':'<input id="c-base" type="hidden" value="platform.dhd-dz.com">')+
   '<label class="f"><span>رمز الواجهة <code dir="ltr" class="code">API Token</code></span><div class="pw"><input id="c-tok" type="password" autocomplete="off" dir="ltr" placeholder="'+(c.id&&S.secrets[c.id]&&S.secrets[c.id].set?"محفوظ ومخفي، اتركه فارغاً لإبقائه":"••••••••••••")+'"><button type="button" class="x" data-act="pweye" aria-label="إظهار">👁</button></div></label><span class="meta">تنسخه من إعدادات واجهة البرمجة (API) في لوحتك عند الناقل.</span>'+
   '<div class="trybox"><button class="btn" data-act="conntry">⚡ جرّب الاتصال</button><span class="meta">'+(S.trying?"جارٍ الاتصال بالشركة…":"نتحقّق من بياناتك عند الناقل قبل الحفظ.")+'</span></div>'+(S.tryRes?'<div class="'+(S.tryRes.ok?"note":"err")+'">'+esc(S.tryRes.msg)+'</div>':'')+
   '<label class="ramas"><input type="checkbox" id="c-ram"'+(c.ramassage?" checked":"")+'><span><b>اطلب من الناقل المجيء لاستلام الطرود (الرامساج)</b><br><b>فعّلها فقط إذا كانت خدمة الرامساج مفعّلة على حسابك لدى الناقل.</b> الحساب الذي لا يوفّرها يقبل الطلب ثم يترك الطرد عالقاً في «En ramassage» بلا معالجة.<br><span class="meta">وهي مطفأة: «أرسل» يوجّه الطرد إلى المحطة مباشرة وتبقى حالته «بانتظار استلام الناقل».</span></span></label>'+
@@ -297,16 +298,17 @@ function explain(res){if(!res||!res.done)return{ok:false,msg:"لم تردّ ال
   return{ok:false,msg:"❌ خطأ من الشركة ("+(res.status||res.error||"؟")+")."}}
 async function saveShip(){var keep=shipData();var e=await saveSettingsPatch({shipping:keep});if(e)toast("تعذّر الحفظ: "+e.message);return !e}
 async function shippingClick(a,b){var sh=shipData();
-  if(a==="connnew"){S.conn={ramassage:false};S.tryRes=null;render()}
+  if(a==="connnew"){S.conn={platform:"dhd",base:PLAT.dhd.base,ramassage:false};S.tryRes=null;render()}
   else if(a==="connedit"){var c=sh.companies.find(function(x){return x.id===b.dataset.id});S.conn=JSON.parse(JSON.stringify(c));S.tryRes=null;render()}
   else if(a==="connback"){S.conn=null;S.tryRes=null;render()}
+  else if(a==="plat"){S.conn.platform=b.dataset.v;if(b.dataset.v==="dhd")S.conn.base=PLAT.dhd.base;else if(S.conn.base===PLAT.dhd.base)S.conn.base="";S.tryRes=null;render()}
   else if(a==="pweye"){var t=document.getElementById("c-tok");t.type=t.type==="password"?"text":"password"}
   else if(a==="conntry"||a==="connsave"){var c2=S.conn,base=normBase(document.getElementById("c-base").value),tok=document.getElementById("c-tok").value.trim();
     if(!base){S.tryRes={ok:false,msg:"اكتب رابط المنصة، مثلاً dhd.ecotrack.dz"};render();return}
     var isNew=!c2.id;c2.base=base;c2.ramassage=document.getElementById("c-ram").checked;c2.nick=document.getElementById("c-nick").value.trim();
     if(isNew&&!tok){S.tryRes={ok:false,msg:"الصق الـ Token أولاً."};render();return}
-    c2.platform="ecotrack";if(!c2.name)c2.name=hostName(base).split(".")[0].toUpperCase();
-    if(isNew){var slug=hostName(base).split(".")[0].replace(/[^a-z0-9]/g,"").slice(0,30)||"carrier";c2.id=slug;var n=2;while(sh.companies.some(function(x){return x.id===c2.id}))c2.id=slug+(n++)}
+    c2.platform=c2.platform==="dhd"?"dhd":"ecotrack";if(!c2.name)c2.name=c2.platform==="dhd"?"DHD":hostName(base).split(".")[0].toUpperCase();
+    if(S.conn.platform==="dhd"&&!c2.name)c2.name="DHD";if(isNew){var slug=c2.platform==="dhd"?"dhd":hostName(base).split(".")[0].replace(/[^a-z0-9]/g,"").slice(0,30)||"carrier";c2.id=slug;var n=2;while(sh.companies.some(function(x){return x.id===c2.id}))c2.id=slug+(n++)}
     if(tok){var r1=await sb.rpc("set_secret",{k:"carrier:"+c2.id,v:tok});if(r1.error){S.tryRes={ok:false,msg:"تعذّر حفظ الـ Token: "+r1.error.message};if(isNew)c2.id=null;render();return}}
     var i=sh.companies.findIndex(function(x){return x.id===c2.id});var keep=JSON.parse(JSON.stringify(c2));if(i>-1)sh.companies[i]=keep;else sh.companies.push(keep);if(!sh.def)sh.def=c2.id;
     if(!await saveShip())return;await loadSecrets();
