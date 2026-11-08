@@ -179,7 +179,10 @@ label.f{display:grid;gap:5px;font-size:13.5px;font-weight:500;min-width:0}
 <div id="app" dir="rtl" lang="ar"><div class="boot">جارٍ تحميل المنتجات…</div></div>
 <script type="application/json" id="shop-data">{}</script>
 <script>
-function nbTrack(ev,p,o){try{if(window.fbq)fbq("track",ev,p||{},o||{})}catch(e){}}
+function nbTrack(ev,p,o){p=p||{};o=o||{};try{if(window.fbq)fbq("track",ev,p,o)}catch(e){}
+  try{if(window.ttq&&window.ttq.track){var tn={ViewContent:"ViewContent",AddToCart:"AddToCart",InitiateCheckout:"InitiateCheckout",Purchase:"CompletePayment"}[ev];if(!tn)return;
+    var tp={content_type:"product"};if(p.value!=null){tp.value=p.value;tp.currency=p.currency||"DZD"}if(p.content_ids)tp.contents=p.content_ids.map(function(c){return{content_id:c,content_name:c}});if(p.num_items)tp.quantity=p.num_items;if(p.content_category)tp.description=p.content_category;
+    ttq.track(tn,tp,o.eventID?{event_id:o.eventID}:{})}}catch(e){}}
 var SB_URL="https://zlrqyramobfdyqikugut.supabase.co",SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpscnF5cmFtb2JmZHlxaWt1Z3V0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQxNTI5MTMsImV4cCI6MjEwOTcyODkxM30.fysYQOBxWIux6n1VDVvFpciXZg5-9FoWM29RKf-GrGI";
 (async function(){
   var h={"apikey":SB_KEY,"Authorization":"Bearer "+SB_KEY};
@@ -189,6 +192,8 @@ var SB_URL="https://zlrqyramobfdyqikugut.supabase.co",SB_KEY="eyJhbGciOiJIUzI1Ni
     document.getElementById("shop-data").textContent=JSON.stringify(d);
     var px=String(d.shop.fbPixel||"").replace(/\D/g,"");
     if(px&&d.shop.fbPixelOn!==false){!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version="2.0";n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,"script","https://connect.facebook.net/en_US/fbevents.js");fbq("init",px);fbq("track","PageView")}
+    var tt=String(d.shop.ttPixel||"").trim().replace(/[^A-Za-z0-9]/g,"");
+    if(tt&&d.shop.ttPixelOn!==false){!function(w,d,t){w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie","holdConsent","revokeConsent","grantConsent"];ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);ttq.instance=function(t){for(var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e};ttq.load=function(e,n){var r="https://analytics.tiktok.com/i18n/pixel/events.js";ttq._i=ttq._i||{};ttq._i[e]=[];ttq._i[e]._u=r;ttq._t=ttq._t||{};ttq._t[e]=+new Date;ttq._o=ttq._o||{};ttq._o[e]=n||{};n=d.createElement("script");n.type="text/javascript";n.async=!0;n.src=r+"?sdkid="+e+"&lib="+t;e=d.getElementsByTagName("script")[0];e.parentNode.insertBefore(n,e)};ttq.load(tt);ttq.page()}(window,document,"ttq")}
   }catch(e){document.getElementById("app").innerHTML='<div class="boot">تعذّر تحميل المنتجات. تأكد من الإنترنت ثم أعد فتح الصفحة.</div>';return}
   var s=document.createElement("script");s.textContent=document.getElementById("app-js").textContent;document.body.appendChild(s);
 })();
