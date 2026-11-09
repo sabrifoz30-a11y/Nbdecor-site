@@ -84,6 +84,7 @@ details.panel summary{cursor:pointer}
 .soon{justify-items:center;text-align:center;padding:30px 16px;color:var(--leaf)}.soon b{color:var(--fg);font-size:17px}
 
 .dinfo{display:grid;gap:6px;margin-top:8px}.dinfo>div{display:grid;grid-template-columns:96px 1fr auto;gap:8px;align-items:center;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}.dinfo span{color:var(--muted,#667);font-size:13px}.dinfo b{font-size:17px;overflow-wrap:anywhere}.dinfo .big b{font-size:22px;color:var(--leaf)}.cp{padding:4px 10px}.snap{display:grid;place-items:center;gap:4px;min-height:150px;border:2px dashed var(--line);border-radius:14px;padding:14px;text-align:center;cursor:pointer;background:var(--surface)}.snap .cam{font-size:40px}.snap.has{border-style:solid;padding:4px}.snap img,.bordimg{width:100%;max-height:420px;object-fit:contain;border-radius:10px;display:block}.big-btn{width:100%;font-size:18px;padding:14px}.big-btn[disabled]{opacity:.5}
+.staff2{display:grid;gap:8px;padding:10px 0;border-bottom:1px solid var(--line)}.staff2:last-child{border-bottom:0}.srow{display:flex;justify-content:space-between;align-items:center;gap:8px}.sacts{display:flex;gap:6px;flex-wrap:wrap;align-items:center}.sacts input{width:110px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;font:inherit}
 </style></head><body>
 <div id="app"><div class="empty">جارٍ التحميل…</div></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
@@ -108,10 +109,10 @@ function top(){return '<header class="top"><div class="wrap">'+(S.user&&isOwner(
   (S.user&&isOwner()?'<div class="scrim" data-act="menu"'+(S.menu?'':' hidden')+'></div><nav class="drawer'+(S.menu?' open':'')+'" aria-label="لوحة التحكم"><div class="drawer-h">لوحة التحكم</div>'+NAV.map(function(n){return '<button class="nav-i" data-act="view" data-v="'+n[0]+'" aria-current="'+(S.view===n[0]?'page':'false')+'">'+ico(n[0])+'<span>'+n[1]+'</span>'+(n[0]==="orders"&&counts()["new"]?'<b class="badge">'+counts()["new"]+'</b>':'')+'</button>'}).join("")+'<a class="nav-i" href="./" target="_blank" rel="noopener">'+ico("home")+'<span>فتح المتجر</span></a></nav>':'')}
 function loginView(){var su=S.mode==="signup";return '<main class="wrap page"><h1>'+(su?"حساب جديد":"تسجيل الدخول")+'</h1><form class="panel" id="auth">'+
   (su?'<label class="f">الاسم<input id="a-name" required autocomplete="name"></label><label class="f">رقم الهاتف<input id="a-phone" type="tel" dir="ltr" autocomplete="tel"></label>':'')+
-  '<label class="f">البريد الإلكتروني<input id="a-email" type="email" dir="ltr" required autocomplete="email"></label><label class="f">كلمة السر<input id="a-pass" type="password" dir="ltr" required minlength="6" autocomplete="'+(su?"new-password":"current-password")+'"></label>'+
+  '<label class="f">'+(su?'البريد الإلكتروني':'رقم الهاتف أو البريد الإلكتروني')+'<input id="a-email" type="'+(su?"email":"text")+'" dir="ltr" required autocomplete="username"></label><label class="f">كلمة السر<input id="a-pass" type="password" dir="ltr" required minlength="6" autocomplete="'+(su?"new-password":"current-password")+'"></label>'+
   (S.err?'<div class="err">'+esc(S.err)+'</div>':'')+'<button class="btn btn-main" '+(S.busy?"disabled":"")+'>'+(su?"إنشاء الحساب":"دخول")+'</button>'+
-  '<button type="button" class="x" data-act="mode">'+(su?"عندي حساب، أريد الدخول":"عامل جديد؟ أنشئ حساباً")+'</button></form></main>'}
-function pendingView(){return '<main class="wrap page"><div class="panel"><h2>مرحباً '+esc(S.me&&S.me.name)+' 👋</h2><p style="margin:0">حسابك أُنشئ، وهو <b>في انتظار موافقة صاحب المحل</b>. عندما يحدد دورك (مؤكد أو مجهّز أو عامل توصيل) ستظهر لك الطلبيات هنا.</p><button class="btn" data-act="reload">تحديث</button></div></main>'}
+  '<span class="meta">العامل يدخل برقم هاتفه وكلمة السر التي أعطاه إياها صاحب المحل.</span></form></main>'}
+function pendingView(){return '<main class="wrap page"><div class="panel"><h2>مرحباً '+esc(S.me&&S.me.name)+' 👋</h2><p style="margin:0">حسابك <b>غير مفعّل</b>. اطلب من صاحب المحل تفعيله، ثم اضغط «تحديث».</p><button class="btn" data-act="reload">تحديث</button></div></main>'}
 function counts(){var c={};S.orders.forEach(function(o){c[o.status]=(c[o.status]||0)+1});return c}
 function ordersView(){
   var c=counts(),tabs=S.me.role==="preparer"?["confirmed","preparing","missing","ready"]:["new","confirming","confirmed","preparing","missing","ready","shipped","delivered","returned","cancelled"];
@@ -331,7 +332,6 @@ async function shippingClick(a,b){var sh=shipData();
   else return false;return true}
 
 function soonView(k){var n=NAV.find(function(x){return x[0]===k});return '<main class="wrap page"><h1>'+n[1]+'</h1><div class="panel soon">'+ico(k)+'<b>هذا القسم قيد التجهيز</b><p class="muted" style="margin:0">'+SOON[k]+'</p></div></main>'}
-function staffView(){return '<main class="wrap page"><h1>المستخدمين</h1><div class="note">يدخل العامل إلى هذه الصفحة وينشئ حساباً، ثم تختار له دوره هنا.</div><div class="panel">'+(S.staff.length?S.staff.map(function(u){return '<div class="staff"><div><b>'+esc(u.name)+'</b><div class="meta" dir="ltr" style="text-align:right">'+esc(u.phone||"")+'</div></div>'+(u.id===S.user.id?'<span class="pill confirmed">'+ROLE[u.role]+'</span>':'<select data-role="'+u.id+'" aria-label="دور '+esc(u.name)+'">'+Object.keys(ROLE).map(function(r){return '<option value="'+r+'"'+(u.role===r?" selected":"")+'>'+ROLE[r]+'</option>'}).join("")+'</select>')+'</div>'}).join(""):'<div class="empty">لا يوجد عمال بعد.</div>')+'</div></main>'}
 /* ===== delivery worker (driver) ===== */
 function isToday(t){return t&&new Date(t).toDateString()===new Date().toDateString()}
 function codOf(o){return (+o.total||0)+(+o.shipping||0)}
@@ -381,18 +381,58 @@ async function driverClick(a,b){
     catch(err){S.sending=false;render();toast(/not ready/.test(err.message)?"هذه الطلبية لم تعد جاهزة للإرسال":"تعذّر الإرسال: "+err.message)}return true}
   return false}
 async function bordPick(file){var id=S.open;var blob=await shrink(file,1800);S.bordTrk=(document.getElementById("bord-trk")||{}).value||S.bordTrk||"";S.bord={id:id,blob:blob,url:URL.createObjectURL(blob)};render()}
+/* ===== staff accounts (owner creates workers) ===== */
+var WROLES=["confirmer","preparer","driver"];
+function loginId(v){v=String(v||"").trim();if(v.indexOf("@")>-1)return v;var d=v.replace(/\D/g,"");return "0"+d.slice(-9)+"@nbdecor.invalid"}
+function genPass(){var c="23456789",s="";for(var i=0;i<6;i++)s+=c.charAt(Math.floor(Math.random()*c.length));return s}
+function staffLink(){return location.origin+location.pathname}
+function newStaffView(){var n=S.newStaff;
+  if(n.done)return '<main class="wrap page"><h1>✅ أُنشئ الحساب</h1><div class="panel"><p style="margin:0">أعطِ هذه المعلومات لـ <b>'+esc(n.name)+'</b>:</p><div class="dinfo"><div><span>الرابط</span><b dir="ltr" style="font-size:13px">'+esc(staffLink())+'</b>'+copyBtn(staffLink())+'</div><div><span>رقم الهاتف</span><b dir="ltr">'+esc(n.phone)+'</b>'+copyBtn(n.phone)+'</div><div class="big"><span>كلمة السر</span><b dir="ltr">'+esc(n.pass)+'</b>'+copyBtn(n.pass)+'</div><div><span>الدور</span><b>'+ROLE[n.role]+'</b></div></div>'+
+    '<a class="btn btn-main" target="_blank" rel="noopener" href="https://wa.me/'+waNum(n.phone)+'?text='+encodeURIComponent("مرحباً "+n.name+"، هذا حسابك في لوحة ورد الجملة:\n"+staffLink()+"\nرقم الهاتف: "+n.phone+"\nكلمة السر: "+n.pass)+'">💬 أرسلها له في واتساب</a><span class="meta">لن تظهر كلمة السر مرة أخرى بعد خروجك من هذه الصفحة، لكن يمكنك تغييرها في أي وقت.</span><button class="btn" data-act="nsback">تم</button></div></main>';
+  return '<main class="wrap page"><button class="x" data-act="nsback">← رجوع</button><h1>إضافة عامل</h1><form class="panel" id="newstaff">'+
+  '<label class="f">الاسم<input id="ns-name" required value="'+esc(n.name||"")+'"></label>'+
+  '<label class="f">رقم الهاتف <span class="meta">يدخل به العامل</span><input id="ns-phone" type="tel" dir="ltr" required inputmode="tel" placeholder="05XX XX XX XX" value="'+esc(n.phone||"")+'"></label>'+
+  '<label class="f">الدور<select id="ns-role">'+WROLES.map(function(r){return '<option value="'+r+'"'+(n.role===r?" selected":"")+'>'+ROLE[r]+'</option>'}).join("")+'</select></label>'+
+  '<label class="f">كلمة السر<div class="pw"><input id="ns-pass" dir="ltr" required minlength="6" autocomplete="off" value="'+esc(n.pass||genPass())+'"><button type="button" class="x" data-act="nsgen">توليد</button></div></label><span class="meta">6 أحرف أو أرقام على الأقل. اخترنا لك واحدة، ويمكنك تغييرها.</span>'+
+  (S.err?'<div class="err">'+esc(S.err)+'</div>':'')+'<button class="btn btn-main"'+(S.busy?" disabled":"")+'>'+(S.busy?"جارٍ الإنشاء…":"إنشاء الحساب")+'</button></form></main>'}
+function staffView(){if(S.newStaff)return newStaffView();var st=S.staffSt||{};
+  return '<main class="wrap page"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><h1>المستخدمين</h1><button class="btn btn-main" data-act="nsnew">+ إضافة عامل</button></div><div class="panel">'+(S.staff.length?S.staff.map(function(u){var x=st[u.id]||{},me=u.id===S.user.id,off=x.banned;
+    return '<div class="staff2"><div class="srow"><div><b>'+esc(u.name)+'</b><div class="meta" dir="ltr" style="text-align:right">'+esc(x.login||u.phone||"")+'</div></div>'+
+    (me||u.role==="owner"?'<span class="pill confirmed">'+ROLE[u.role]+'</span>':off?'<span class="pill cancelled">موقوف</span>':'<select data-role="'+u.id+'" aria-label="دور '+esc(u.name)+'">'+(u.role==="pending"?'<option value="pending" selected>'+ROLE.pending+'</option>':'')+WROLES.map(function(r){return '<option value="'+r+'"'+(u.role===r?" selected":"")+'>'+ROLE[r]+'</option>'}).join("")+'</select>')+'</div>'+
+    (me||u.role==="owner"?'':'<div class="sacts">'+(off?'<select id="re-'+u.id+'" aria-label="الدور">'+WROLES.map(function(r){return '<option value="'+r+'">'+ROLE[r]+'</option>'}).join("")+'</select><button class="btn btn-sm" data-act="sactive" data-id="'+u.id+'">تفعيل</button>':
+      (S.pwFor===u.id?'<input id="pw-'+u.id+'" dir="ltr" value="'+genPass()+'" aria-label="كلمة السر الجديدة"><button class="btn btn-sm btn-main" data-act="spwsave" data-id="'+u.id+'">حفظ</button>':'<button class="btn btn-sm" data-act="spw" data-id="'+u.id+'">تغيير كلمة السر</button>')+
+      '<button class="btn btn-sm danger" data-act="sstop" data-id="'+u.id+'">'+(S.stopFor===u.id?"تأكيد الإيقاف":"إيقاف")+'</button>')+'</div>')+'</div>'}).join(""):'<div class="empty">لا يوجد عمال بعد.</div>')+'</div></main>'}
+async function loadStaffSt(){var r=await sb.rpc("admin_staff_status");S.staffSt={};(r.data||[]).forEach(function(x){S.staffSt[x.id]=x})}
+async function staffClick(a,b){
+  if(a==="nsnew"){S.newStaff={role:"driver"};S.err="";render();return true}
+  if(a==="nsback"){S.newStaff=null;S.err="";render();return true}
+  if(a==="nsgen"){document.getElementById("ns-pass").value=genPass();return true}
+  if(a==="spw"){S.pwFor=b.dataset.id;render();return true}
+  if(a==="spwsave"){var id=b.dataset.id,v=document.getElementById("pw-"+id).value.trim();if(v.length<6){toast("كلمة السر 6 أحرف على الأقل");return true}
+    var r=await sb.rpc("admin_set_password",{uid:id,p_password:v});if(r.error){toast("تعذّر الحفظ: "+r.error.message);return true}
+    var u=S.staff.find(function(x){return x.id===id});S.pwFor=null;render();toast("تغيّرت كلمة السر");
+    if(u&&u.phone&&confirm("أرسل كلمة السر الجديدة لـ "+u.name+" في واتساب؟"))window.open("https://wa.me/"+waNum(u.phone)+"?text="+encodeURIComponent("كلمة السر الجديدة لحسابك في لوحة ورد الجملة: "+v),"_blank","noopener");return true}
+  if(a==="sstop"){var id2=b.dataset.id;if(S.stopFor!==id2){S.stopFor=id2;render();return true}S.stopFor=null;
+    var r2=await sb.rpc("admin_set_active",{uid:id2,active:false});if(r2.error){toast("تعذّر: "+r2.error.message);return true}await loadStaff();await loadStaffSt();render();toast("أُوقف الحساب، ولم يعد يستطيع الدخول");return true}
+  if(a==="sactive"){var id3=b.dataset.id,role=document.getElementById("re-"+id3).value;var r3=await sb.rpc("admin_set_active",{uid:id3,active:true,p_role:role});if(r3.error){toast("تعذّر: "+r3.error.message);return true}await loadStaff();await loadStaffSt();render();toast("فُعّل الحساب");return true}
+  return false}
+async function createStaff(f){var n={name:f.querySelector("#ns-name").value.trim(),phone:f.querySelector("#ns-phone").value.replace(/\D/g,""),role:f.querySelector("#ns-role").value,pass:f.querySelector("#ns-pass").value.trim()};
+  S.newStaff=n;S.err="";if(n.phone.length<9){S.err="رقم الهاتف غير صحيح";render();return}if(n.pass.length<6){S.err="كلمة السر 6 أحرف على الأقل";render();return}
+  n.phone="0"+n.phone.slice(-9);S.busy=true;render();var r=await sb.rpc("admin_create_staff",{p_name:n.name,p_phone:n.phone,p_role:n.role,p_password:n.pass});S.busy=false;
+  if(r.error){S.err=/phone exists/.test(r.error.message)?"يوجد حساب بهذا الرقم من قبل":"تعذّر الإنشاء: "+r.error.message;render();return}
+  n.done=true;await loadStaff();await loadStaffSt();render()}
 function render(){var body;if(!S.user)body=loginView();else if(!S.me||S.me.role==="pending")body=pendingView();else if(S.me.role==="driver"){body=S.open?driverOrderView():driverView()}else if(!isOwner()&&S.view!=="orders"){S.view="orders";body=S.open?orderView():ordersView()}else if(S.view==="home")body=homeView();else if(S.view==="users")body=staffView();else if(S.view==="products")body=productsView();else if(S.view==="funnels")body=funnelsView();else if(S.view==="shipping")body=shippingView();else if(SOON[S.view])body=soonView(S.view);else if(S.open)body=orderView();else body=ordersView();app.innerHTML=top()+body}
 async function loadMe(){var r=await sb.from("profiles").select("*").eq("id",S.user.id).maybeSingle();S.me=r.data}
 async function loadOrders(){var r=await sb.from("orders").select("*").order("id",{ascending:false}).limit(500);if(!r.error)S.orders=r.data||[]}
 async function loadStaff(){var r=await sb.from("profiles").select("*").order("created_at");if(!r.error)S.staff=r.data||[]}
-async function boot(){var s=await sb.auth.getSession();S.user=s.data.session?s.data.session.user:null;if(S.user){await loadMe();if(S.me&&S.me.role!=="pending"){if(S.me.role==="preparer")S.tab="confirmed";if(!isOwner())S.view="orders";await loadOrders();if(S.me.role==="owner")await loadStaff()}}render()}
-app.addEventListener("submit",async function(e){if(e.target.id!=="auth")return;e.preventDefault();S.err="";S.busy=true;render();
+async function boot(){var s=await sb.auth.getSession();S.user=s.data.session?s.data.session.user:null;if(S.user){await loadMe();if(S.me&&S.me.role!=="pending"){if(S.me.role==="preparer")S.tab="confirmed";if(!isOwner())S.view="orders";await loadOrders();if(S.me.role==="owner"){await loadStaff();await loadStaffSt()}}}render()}
+app.addEventListener("submit",async function(e){if(e.target.id==="newstaff"){e.preventDefault();createStaff(e.target);return}if(e.target.id!=="auth")return;e.preventDefault();S.err="";S.busy=true;render();
   var em=document.getElementById("a-email"),pw=document.getElementById("a-pass");
   var vals={email:(document.getElementById("a-email")||{}).value,pass:(document.getElementById("a-pass")||{}).value};
   try{if(S.mode==="signup"){var r=await sb.auth.signUp({email:e.target.querySelector("#a-email").value.trim(),password:e.target.querySelector("#a-pass").value,options:{data:{name:e.target.querySelector("#a-name").value.trim(),phone:e.target.querySelector("#a-phone").value.trim()}}});if(r.error)throw r.error}
-    else{var r2=await sb.auth.signInWithPassword({email:e.target.querySelector("#a-email").value.trim(),password:e.target.querySelector("#a-pass").value});if(r2.error)throw r2.error}
-    S.busy=false;await boot()}catch(err){S.busy=false;S.err=/Invalid login/i.test(err.message)?"البريد أو كلمة السر غير صحيحة":/registered/i.test(err.message)?"هذا البريد مسجّل من قبل، اختر «عندي حساب»":(/least 6/i.test(err.message)?"كلمة السر يجب أن تكون 6 أحرف على الأقل":err.message);render()}});
-app.addEventListener("click",async function(e){var b=e.target.closest("[data-act]");if(!b)return;var a=b.dataset.act;if(await driverClick(a,b))return;
+    else{var r2=await sb.auth.signInWithPassword({email:loginId(e.target.querySelector("#a-email").value),password:e.target.querySelector("#a-pass").value});if(r2.error)throw r2.error}
+    S.busy=false;await boot()}catch(err){S.busy=false;S.err=/Invalid login/i.test(err.message)?"رقم الهاتف أو كلمة السر غير صحيحة":/banned/i.test(err.message)?"هذا الحساب موقوف، تواصل مع صاحب المحل":/registered/i.test(err.message)?"هذا البريد مسجّل من قبل، اختر «عندي حساب»":(/least 6/i.test(err.message)?"كلمة السر يجب أن تكون 6 أحرف على الأقل":err.message);render()}});
+app.addEventListener("click",async function(e){var b=e.target.closest("[data-act]");if(!b)return;var a=b.dataset.act;if(await driverClick(a,b))return;if(isOwner()&&await staffClick(a,b))return;
   if(a==="mode"){S.mode=S.mode==="login"?"signup":"login";S.err="";render()}
   else if(a==="logout"){await sb.auth.signOut();S.user=null;S.me=null;S.open=null;render()}
   else if(a==="reload"){await boot()}
