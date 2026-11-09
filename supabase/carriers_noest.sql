@@ -18,6 +18,8 @@ begin
   elsif comp->>'platform' = 'noest' then
     if path not in ('/api/public/desks','/api/public/fees','/api/public/get/wilayas','/api/public/get/communes') then raise exception 'path not allowed'; end if;
     if aid is null then raise exception 'no api id'; end if;
+    -- the user GUID is the short one (about 8 chars); fix it if the two were pasted in each other's box
+    if length(aid) > length(tok) then declare t text := tok; begin tok := aid; aid := t; end; end if;
     select net.http_get(url := base||path, params := q || jsonb_build_object('api_token', tok, 'user_guid', aid),
       headers := jsonb_build_object('Authorization','Bearer '||tok,'Accept','application/json'), timeout_milliseconds := 20000) into rid;
   else
