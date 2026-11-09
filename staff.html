@@ -85,7 +85,8 @@ details.panel summary{cursor:pointer}
 
 .dinfo{display:grid;gap:6px;margin-top:8px}.dinfo>div{display:grid;grid-template-columns:96px 1fr auto;gap:8px;align-items:center;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}.dinfo span{color:var(--muted,#667);font-size:13px}.dinfo b{font-size:17px;overflow-wrap:anywhere}.dinfo .big b{font-size:22px;color:var(--leaf)}.cp{padding:4px 10px}.snap{display:grid;place-items:center;gap:4px;min-height:150px;border:2px dashed var(--line);border-radius:14px;padding:14px;text-align:center;cursor:pointer;background:var(--surface)}.snap .cam{font-size:40px}.snap.has{border-style:solid;padding:4px}.snap img,.bordimg{width:100%;max-height:420px;object-fit:contain;border-radius:10px;display:block}.big-btn{width:100%;font-size:18px;padding:14px}.big-btn[disabled]{opacity:.5}
 .staff2{display:grid;gap:8px;padding:10px 0;border-bottom:1px solid var(--line)}.staff2:last-child{border-bottom:0}.srow{display:flex;justify-content:space-between;align-items:center;gap:8px}.sacts{display:flex;gap:6px;flex-wrap:wrap;align-items:center}.sacts input{width:110px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;font:inherit}
-</style></head><body>
+</style><script>var APPV="44";(function(){try{fetch("version.txt?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(v){v=(v||"").trim();if(v&&v!==APPV&&sessionStorage.getItem("nbv")!==v){sessionStorage.setItem("nbv",v);location.replace(location.pathname+"?v="+v)}}).catch(function(){})}catch(e){}})();</script>
+</head><body>
 <div id="app"><div class="empty">جارٍ التحميل…</div></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script>

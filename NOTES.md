@@ -11,3 +11,6 @@
 - [ ] قراءة المرجع والسعر من الصور بالذكاء الاصطناعي (يحتاج حساب console.anthropic.com وبطاقة دفع، اقترح المستخدم تجربة RedotPay).
 - [ ] إشعار على هاتف صاحب المحل عند كل طلبية جديدة.
 - [ ] أقسام: شركات الشحن، أدوات النظام، الإعدادات.
+
+## Cache busting (staff.html)
+On every staff.html change bump both `APPV` in staff.html and `version.txt` to the same new number; open pages then reload themselves to the new version.
