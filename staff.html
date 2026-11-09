@@ -335,6 +335,8 @@ function staffView(){return '<main class="wrap page"><h1>المستخدمين</h
 /* ===== delivery worker (driver) ===== */
 function isToday(t){return t&&new Date(t).toDateString()===new Date().toDateString()}
 function codOf(o){return (+o.total||0)+(+o.shipping||0)}
+var TRACK_URL="https://kazi-tour.com/suivi";
+function trackBtn(v){return v?'<button class="btn btn-sm" data-act="track" data-v="'+esc(v)+'">🔎 تتبّع</button>':''}
 function copyBtn(v){return v?'<button class="btn btn-sm cp" data-act="copy" data-v="'+esc(v)+'">نسخ</button>':''}
 function driverView(){var ready=S.orders.filter(function(o){return o.status==="ready"}),sent=S.orders.filter(function(o){return o.status==="shipped"&&isToday(o.shipped_at)});
   var tab=S.dtab==="sent"?"sent":"ready",list=tab==="sent"?sent:ready;
@@ -355,19 +357,20 @@ function driverOrderView(){var o=S.orders.find(function(x){return x.id===S.open}
    '<div><span>المحتوى</span><b>'+pcs+' قطعة ('+(o.items||[]).length+' منتج)</b></div>'+
    (o.shipping_company?'<div><span>شركة التوصيل</span><b>'+esc(o.shipping_company)+'</b></div>':'')+
   '</div></div>'+
-  (done?'<div class="panel"><h2>✅ أُرسل</h2><div class="kv"><b>الوقت</b><span>'+when(o.shipped_at)+'</span>'+(o.tracking?'<b>رقم التتبع</b><span dir="ltr" style="text-align:right">'+esc(o.tracking)+'</span>':'')+'</div>'+(S.bordUrl&&S.bordUrl[o.id]?'<img class="bordimg" src="'+esc(S.bordUrl[o.id])+'" alt="صورة البوردرو">':'')+'</div>':
+  (done?'<div class="panel"><h2>✅ أُرسل</h2><div class="kv"><b>الوقت</b><span>'+when(o.shipped_at)+'</span>'+(o.tracking?'<b>رقم التتبع</b><span dir="ltr" style="text-align:right">'+esc(o.tracking)+' '+trackBtn(o.tracking)+'</span>':'')+'</div>'+(S.bordUrl&&S.bordUrl[o.id]?'<img class="bordimg" src="'+esc(S.bordUrl[o.id])+'" alt="صورة البوردرو">':'')+'</div>':
   '<div class="panel"><h2>بعد استلام البوردرو</h2>'+
    '<label class="snap'+(ph?' has':'')+'">'+(ph?'<img src="'+ph.url+'" alt="صورة البوردرو">':'<span class="cam">📷</span><b>صوّر البوردرو</b><span class="meta">الورقة التي أعطاك إياها عامل شركة التوصيل</span>')+'<input type="file" id="bord-in" accept="image/*" capture="environment" hidden></label>'+
    (ph?'<button class="x" data-act="bordre">إعادة التصوير</button>':'')+
-   '<label class="f">رقم التتبع (ID) <span class="meta">اختياري</span><input id="bord-trk" dir="ltr" inputmode="text" autocomplete="off" placeholder="مثال: KZ123456" value="'+esc(S.bordTrk||"")+'"></label>'+
-   '<button class="btn btn-main big-btn" data-act="shipdone" data-id="'+o.id+'"'+(ph&&!S.sending?'':' disabled')+'>'+(S.sending?"جارٍ الإرسال…":"✅ تم الإرسال")+'</button>'+
+   '<label class="f"><span>رقم التتبع <code dir="ltr" class="code">Tracking #</code> <span class="meta">اختياري</span></span><input id="bord-trk" dir="ltr" inputmode="numeric" autocomplete="off" placeholder="مثال: 225347" value="'+esc(S.bordTrk||"")+'"></label>'+
+   '<span class="meta">تجده في أعلى البوردرو بعد كلمة <b dir="ltr">Tracking #</b>.</span>'+'<button class="btn btn-main big-btn" data-act="shipdone" data-id="'+o.id+'"'+(ph&&!S.sending?'':' disabled')+'>'+(S.sending?"جارٍ الإرسال…":"✅ تم الإرسال")+'</button>'+
    (ph?'':'<span class="meta">يتفعّل الزر بعد تصوير البوردرو.</span>')+'</div>')+'</main>'}
 async function bordUrl(o){if(!o||!o.bordereau)return;S.bordUrl=S.bordUrl||{};if(S.bordUrl[o.id])return;var r=await sb.storage.from("proofs").createSignedUrl(o.bordereau,3600);if(r.data&&r.data.signedUrl){S.bordUrl[o.id]=r.data.signedUrl;render()}}
 function bordPanel(o){if(o.status!=="shipped"&&!o.bordereau&&!o.tracking)return "";var who=(S.staff||[]).find(function(u){return u.id===o.shipped_by});
-  return '<div class="panel"><h2>الإرسال</h2><div class="kv">'+(o.shipped_at?'<b>أُرسل</b><span>'+when(o.shipped_at)+(who?' · '+esc(who.name):'')+'</span>':'')+(o.tracking?'<b>رقم التتبع</b><span dir="ltr" style="text-align:right">'+esc(o.tracking)+' '+copyBtn(o.tracking)+'</span>':'')+'</div>'+
+  return '<div class="panel"><h2>الإرسال</h2><div class="kv">'+(o.shipped_at?'<b>أُرسل</b><span>'+when(o.shipped_at)+(who?' · '+esc(who.name):'')+'</span>':'')+(o.tracking?'<b>رقم التتبع</b><span dir="ltr" style="text-align:right">'+esc(o.tracking)+' '+copyBtn(o.tracking)+' '+trackBtn(o.tracking)+'</span>':'')+'</div>'+
   (o.bordereau?(S.bordUrl&&S.bordUrl[o.id]?'<a href="'+esc(S.bordUrl[o.id])+'" target="_blank" rel="noopener"><img class="bordimg" src="'+esc(S.bordUrl[o.id])+'" alt="صورة البوردرو"></a>':'<div class="meta">جارٍ تحميل صورة البوردرو…</div>'):'')+'</div>'}
 async function driverClick(a,b){
   if(a==="dtab"){S.dtab=b.dataset.v;render();return true}
+  if(a==="track"){try{await navigator.clipboard.writeText(b.dataset.v);toast("نُسخ الرقم، الصقه في صفحة التتبع")}catch(e){}window.open(TRACK_URL,"_blank","noopener");return true}
   if(a==="copy"){try{await navigator.clipboard.writeText(b.dataset.v);toast("نُسخ")}catch(e){toast("تعذّر النسخ")}return true}
   if(a==="bordre"){S.bord=null;render();var i=document.getElementById("bord-in");if(i)i.click();return true}
   if(a==="shipdone"){var id=+b.dataset.id,o=S.orders.find(function(x){return x.id===id});if(!S.bord||S.bord.id!==id||S.sending)return true;
