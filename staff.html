@@ -85,7 +85,8 @@ details.panel summary{cursor:pointer}
 
 .dinfo{display:grid;gap:6px;margin-top:8px}.dinfo>div{display:grid;grid-template-columns:96px 1fr auto;gap:8px;align-items:center;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}.dinfo span{color:var(--muted,#667);font-size:13px}.dinfo b{font-size:17px;overflow-wrap:anywhere}.dinfo .big b{font-size:22px;color:var(--leaf)}.cp{padding:4px 10px}.snap{display:grid;place-items:center;gap:4px;min-height:150px;border:2px dashed var(--line);border-radius:14px;padding:14px;text-align:center;cursor:pointer;background:var(--surface)}.snap .cam{font-size:40px}.snap.has{border-style:solid;padding:4px}.snap img,.bordimg{width:100%;max-height:420px;object-fit:contain;border-radius:10px;display:block}.big-btn{width:100%;font-size:18px;padding:14px}.big-btn[disabled]{opacity:.5}
 .staff2{display:grid;gap:8px;padding:10px 0;border-bottom:1px solid var(--line)}.staff2:last-child{border-bottom:0}.srow{display:flex;justify-content:space-between;align-items:center;gap:8px}.sacts{display:flex;gap:6px;flex-wrap:wrap;align-items:center}.sacts input{width:110px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;font:inherit}
-</style><script>var APPV="46";(function(){try{fetch("version.txt?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(v){v=(v||"").trim();if(v&&v!==APPV&&sessionStorage.getItem("nbv")!==v){sessionStorage.setItem("nbv",v);location.replace(location.pathname+"?v="+v)}}).catch(function(){})}catch(e){}})();</script>
+.sync-btn{width:100%}.rtab{width:100%;border-collapse:collapse;margin-top:8px;font-size:14px}.rtab th,.rtab td{padding:6px 4px;border-bottom:1px solid var(--line);text-align:start}.rtab th{color:var(--leaf)}
+</style><script>var APPV="47";(function(){try{fetch("version.txt?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(v){v=(v||"").trim();if(v&&v!==APPV&&sessionStorage.getItem("nbv")!==v){sessionStorage.setItem("nbv",v);location.replace(location.pathname+"?v="+v)}}).catch(function(){})}catch(e){}})();</script>
 </head><body>
 <div id="app"><div class="empty">جارٍ التحميل…</div></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
@@ -273,8 +274,8 @@ function shipData(){if(!S.settings.shipping)S.settings.shipping={};var sh=S.sett
 function shippingView(){if(!S.settings)return '<main class="wrap page"><div class="empty">جارٍ التحميل…</div></main>';if(S.conn)return connectView();var sh=shipData();
   return '<main class="wrap page"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><h1>شركات الشحن</h1><button class="btn btn-main" data-act="connnew">+ اربط شركة توصيل</button></div>'+
   (sh.companies.length?sh.companies.map(function(c){var st=S.secrets&&S.secrets[c.id];return '<section class="panel"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><div class="phead">'+carrierLogo(c)+'<div><h2>'+esc(c.nick||c.name)+'</h2>'+('<div class="meta" dir="ltr" style="text-align:right">'+esc(carrierLabel(c))+' · '+esc(hostName(c.base))+'</div>')+'</div></div>'+(sh.def===c.id?'<span class="pill confirmed">الافتراضية</span>':'<button class="btn btn-sm" data-act="shipdef" data-id="'+c.id+'">اجعلها الافتراضية</button>')+'</div>'+
-    '<div class="kv"><b>الربط</b><span>'+(st&&st.set?'🔒 مربوطة (Token مخفي ينتهي بـ <span dir="ltr">••••'+esc(st.tail)+'</span>)':'⚠️ غير مربوطة')+'</span><b>الرامساج</b><span>'+(c.ramassage?"مفعّل":"غير مفعّل")+'</span><b>أسعار التوصيل</b><span>'+(c.rates&&Object.keys(c.rates).length?Object.keys(c.rates).length+' ولاية':'تُجلب من الشركة بعد الربط')+'</span></div>'+
-    '<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-sm" data-act="conntest" data-id="'+c.id+'">جرّب الاتصال</button><button class="btn btn-sm" data-act="connedit" data-id="'+c.id+'">تعديل</button><button class="btn btn-sm danger" data-act="conndel" data-id="'+c.id+'">'+(S.delShip===c.id?"تأكيد الفصل":"فصل الشركة")+'</button></div>'+
+    '<div class="kv"><b>الربط</b><span>'+(st&&st.set?'🔒 مربوطة (Token مخفي ينتهي بـ <span dir="ltr">••••'+esc(st.tail)+'</span>)':'⚠️ غير مربوطة')+'</span><b>الرامساج</b><span>'+(c.ramassage?"مفعّل":"غير مفعّل")+'</span><b>أسعار التوصيل</b><span>'+(c.rates&&Object.keys(c.rates).length?Object.keys(c.rates).length+' ولاية'+(c.synced?' · آخر مزامنة '+when(c.synced):''):'لم تُزامن بعد')+'</span></div>'+ratesTable(c)+
+    '<button class="btn btn-main sync-btn" data-act="shipsync" data-id="'+c.id+'"'+(S.syncing?" disabled":"")+'>'+(S.syncing===c.id?"⏳ جارٍ المزامنة…":"🔄 مزامنة أسعار التوصيل")+'</button>'+'<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-sm" data-act="conntest" data-id="'+c.id+'">جرّب الاتصال</button><button class="btn btn-sm" data-act="connedit" data-id="'+c.id+'">تعديل</button><button class="btn btn-sm danger" data-act="conndel" data-id="'+c.id+'">'+(S.delShip===c.id?"تأكيد الفصل":"فصل الشركة")+'</button></div>'+
     (S.testRes&&S.testRes.id===c.id?'<div class="'+(S.testRes.ok?"note":"err")+'">'+esc(S.testRes.msg)+'</div>':'')+'</section>'}).join(""):'<div class="panel empty">لم تربط أي شركة توصيل بعد.<br>اضغط «+ اربط شركة توصيل».</div>')+'</main>'}
 function normBase(u){u=String(u||"").trim();if(!u)return"";if(!/^https?:\/\//i.test(u))u="https://"+u;try{var x=new URL(u);return "https://"+x.hostname.toLowerCase()}catch(e){return""}}
 function hostName(b){return String(b||"").replace(/^https:\/\//,"")}
@@ -308,6 +309,25 @@ function explain(res){if(!res||!res.done)return{ok:false,msg:"لم تردّ ال
   if(res.status===404)return{ok:false,msg:"❌ هذا الرابط لا يبدو منصة الشركة. تأكد من الرابط."};
   return{ok:false,msg:"❌ خطأ من الشركة ("+(res.status||res.error||"؟")+")."}}
 function testPath(id){var c=shipData().companies.find(function(z){return z.id===id});return c&&c.platform==="yalidine"?"/v1/wilayas/":c&&c.platform==="noest"?"/api/public/desks":"/api/v1/get/wilayas"}
+function feesPath(c){return c.platform==="yalidine"?"/v1/deliveryfees/":c.platform==="noest"?"/api/public/fees":"/api/v1/get/fees"}
+function feeNum(v){var n=parseInt(String(v==null?"":v).replace(/[^\d]/g,""),10);return isNaN(n)||n<=0?null:n}
+function parseFees(body){var j;try{j=JSON.parse(body)}catch(e){return null}var out={},cnt=0;
+  function take(e){if(!e||typeof e!=="object")return;var w=parseInt(e.wilaya_id!=null?e.wilaya_id:e.wilaya!=null?e.wilaya:e.id_wilaya,10);if(!(w>=1&&w<=69))return;
+    var h=feeNum(e.tarif!=null?e.tarif:e.home_fee!=null?e.home_fee:e.express_home),d=feeNum(e.tarif_stopdesk!=null?e.tarif_stopdesk:e.desk_fee!=null?e.desk_fee:e.express_desk);
+    if(h==null&&d==null)return;out[w]={h:h,d:d};cnt++}
+  function each(x){if(!x||typeof x!=="object")return;(Array.isArray(x)?x:Object.keys(x).map(function(k){return x[k]})).forEach(take)}
+  var t=j&&j.tarifs||{},cands=[t.delivery,t.livraison,j&&j.livraison,j&&j.delivery,j&&j.data,j];
+  for(var i=0;i<cands.length&&!cnt;i++)each(cands[i]);return cnt?out:null}
+async function syncFees(id){var sh=shipData(),c=sh.companies.find(function(z){return z.id===id});if(!c)return;S.syncing=id;S.testRes={id:id,ok:true,msg:"جارٍ جلب الأسعار من الشركة…"};render();
+  try{var res=await carrierGet(id,feesPath(c));if(!res.done||res.status!==200){S.testRes=Object.assign({id:id},explain(res));if(res.status===200)S.testRes.ok=true}
+    else{var r=parseFees(res.body);if(!r){S.testRes={id:id,ok:false,msg:"❌ ردّت الشركة لكن لم نتعرّف على شكل الأسعار. أرسل صورة لهذه الرسالة لصاحب الموقع."}}
+      else{c=shipData().companies.find(function(z){return z.id===id});var old=c.rates||{};Object.keys(r).forEach(function(w){if(old[w]&&old[w].off)r[w].off=true});c.rates=r;c.synced=new Date().toISOString();
+        if(await saveShip()){var n=Object.keys(r).length;S.testRes={id:id,ok:true,msg:"✅ تمت المزامنة: أسعار "+n+" ولاية."+(sh.def===id?" المتجر يستعمل هذه الأسعار الآن.":" اجعلها الافتراضية ليستعملها المتجر.")}}}}}
+  catch(err){S.testRes={id:id,ok:false,msg:"❌ "+err.message}}S.syncing=null;render()}
+function ratesTable(c){var r=c.rates||{},ks=Object.keys(r).sort(function(a,b){return a-b});if(!ks.length)return "";
+  return '<details><summary class="meta">عرض الأسعار ('+ks.length+' ولاية)</summary><table class="rtab"><thead><tr><th>الولاية</th><th>المنزل</th><th>المكتب</th></tr></thead><tbody>'+ks.map(function(w){var x=r[w];return '<tr><td>'+esc(wName(w))+'</td><td>'+(x.h?fmt(x.h):"—")+'</td><td>'+(x.d?fmt(x.d):"—")+'</td></tr>'}).join("")+'</tbody></table></details>'}
+var WN=["أدرار","الشلف","الأغواط","أم البواقي","باتنة","بجاية","بسكرة","بشار","البليدة","البويرة","تمنراست","تبسة","تلمسان","تيارت","تيزي وزو","الجزائر","الجلفة","جيجل","سطيف","سعيدة","سكيكدة","سيدي بلعباس","عنابة","قالمة","قسنطينة","المدية","مستغانم","المسيلة","معسكر","ورقلة","وهران","البيض","إليزي","برج بوعريريج","بومرداس","الطارف","تندوف","تيسمسيلت","الوادي","خنشلة","سوق أهراس","تيبازة","ميلة","عين الدفلى","النعامة","عين تموشنت","غرداية","غليزان","تيميمون","برج باجي مختار","أولاد جلال","بني عباس","عين صالح","عين قزام","تقرت","جانت","المغير","المنيعة"];
+function wName(w){return (w<10?"0":"")+w+" - "+(WN[w-1]||"")}
 async function saveShip(){var keep=shipData();var e=await saveSettingsPatch({shipping:keep});if(e)toast("تعذّر الحفظ: "+e.message);return !e}
 async function shippingClick(a,b){var sh=shipData();
   if(a==="connnew"){S.conn={platform:"dhd",base:PLAT.dhd.base,ramassage:false};S.tryRes=null;render()}
@@ -330,6 +350,7 @@ async function shippingClick(a,b){var sh=shipData();
     if(a==="conntry"){S.trying=true;render();try{var res=await carrierGet(c2.id,testPath(c2.id));var cc=sh.companies.find(function(z){return z.id===c2.id});if(cc)c2.base=cc.base;S.tryRes=explain(res)}catch(err){S.tryRes={ok:false,msg:"❌ "+err.message}}S.trying=false;render()}
     else{S.conn=null;S.tryRes=null;render();toast("رُبطت "+(c2.nick||c2.name))}}
   else if(a==="conntest"){S.testRes={id:b.dataset.id,ok:true,msg:"جارٍ الاتصال…"};render();try{S.testRes=Object.assign({id:b.dataset.id},explain(await carrierGet(b.dataset.id,testPath(b.dataset.id))))}catch(err){S.testRes={id:b.dataset.id,ok:false,msg:"❌ "+err.message}}render()}
+  else if(a==="shipsync"){if(!S.syncing)await syncFees(b.dataset.id)}
   else if(a==="shipdef"){sh.def=b.dataset.id;if(await saveShip()){render();toast("أصبحت الشركة الافتراضية")}}
   else if(a==="conndel"){var id=b.dataset.id;if(S.delShip!==id){S.delShip=id;render();return}S.delShip=null;await sb.rpc("set_secret",{k:"carrier:"+id,v:""});await sb.rpc("set_secret",{k:"carrier:"+id+"-apiid",v:""});sh.companies=sh.companies.filter(function(x){return x.id!==id});if(sh.def===id)sh.def=sh.companies[0]?sh.companies[0].id:null;await saveShip();await loadSecrets();render();toast("فُصلت الشركة وحُذف الـ Token")}
   else return false;return true}
