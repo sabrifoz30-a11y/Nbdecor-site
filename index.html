@@ -260,8 +260,8 @@ function options(p){
 }
 function gallery(p,start){
   var ims=p.imgs&&p.imgs.length?p.imgs:[{u:p.img,c:""}];
-  if(ims.length<2)return '<div class="ph"><img loading="lazy" src="'+esc(src1(p,ims[0].u))+'" alt="منتج '+esc(p.ref)+'">'+(p.example?'<span class="tag">مثال</span>':'')+'</div>';
-  return '<div class="ph"><div class="gal" dir="ltr" data-gal="'+p.id+'" data-start="'+(start||0)+'">'+ims.map(function(m,i){return '<img loading="lazy" src="'+esc(src1(p,m.u))+'" alt="منتج '+esc(p.ref)+(m.c?' باللون '+esc(m.c):'')+'">'}).join("")+'</div>'+
+  if(ims.length<2)return '<div class="ph"><img loading="lazy" decoding="async" src="'+esc(src1(p,ims[0].u))+'" alt="منتج '+esc(p.ref)+'">'+(p.example?'<span class="tag">مثال</span>':'')+'</div>';
+  return '<div class="ph"><div class="gal" dir="ltr" data-gal="'+p.id+'" data-start="'+(start||0)+'">'+ims.map(function(m,i){return '<img loading="lazy" decoding="async" src="'+esc(src1(p,m.u))+'" alt="منتج '+esc(p.ref)+(m.c?' باللون '+esc(m.c):'')+'">'}).join("")+'</div>'+
   '<button class="gnav gprev" data-act="gal" data-id="'+p.id+'" data-d="-1" aria-label="الصورة السابقة">‹</button><button class="gnav gnext" data-act="gal" data-id="'+p.id+'" data-d="1" aria-label="الصورة التالية">›</button>'+
   '<div class="dots" data-dots="'+p.id+'">'+ims.map(function(m,i){return '<i'+(i===(start||0)?' class="on"':'')+'></i>'}).join("")+'</div><span class="tag">'+ims.length+' صور</span></div>';
 }
@@ -364,7 +364,7 @@ function cartView(){
   var opts='<option value="">اختر الولاية</option>'+WILAYAS.map(function(w,i){var n=i+1;return '<option value="'+n+'"'+(String(form.wilaya)===String(n)?" selected":"")+'>'+(n<10?"0":"")+n+' - '+w+'</option>'}).join("");
   var ready=formOk()&&waPhone();
   return '<main class="wrap page"><h1>سلتك</h1>'+
-  '<section class="panel">'+lines.map(function(x,i){return '<div class="line"><img src="'+esc(img(x.p,x.l.color))+'" alt=""><div class="line-meta"><div class="info"><span class="ref">'+esc(x.p.ref)+'</span></div><span class="small">'+varParts(x.p,x.l.color,x.l.x).map(function(v){return esc(v)+' · '}).join("")+''+fmt(priceFull(x.p,x.l.color,x.l.x))+' للقطعة</span><div class="row"><div class="step"><button data-act="linc" data-i="'+i+'" aria-label="زيادة">+</button><input id="l-'+i+'" type="number" min="1" inputmode="numeric" value="'+x.l.qty+'" data-line="'+i+'" aria-label="الكمية"><button data-act="ldec" data-i="'+i+'" aria-label="إنقاص">−</button></div><button class="x" data-act="lrm" data-i="'+i+'">حذف</button></div></div><b class="price">'+fmt(priceFull(x.p,x.l.color,x.l.x)*x.l.qty)+'</b></div>'}).join("")+
+  '<section class="panel">'+lines.map(function(x,i){return '<div class="line"><img src="'+esc(th(img(x.p,x.l.color)))+'" alt=""><div class="line-meta"><div class="info"><span class="ref">'+esc(x.p.ref)+'</span></div><span class="small">'+varParts(x.p,x.l.color,x.l.x).map(function(v){return esc(v)+' · '}).join("")+''+fmt(priceFull(x.p,x.l.color,x.l.x))+' للقطعة</span><div class="row"><div class="step"><button data-act="linc" data-i="'+i+'" aria-label="زيادة">+</button><input id="l-'+i+'" type="number" min="1" inputmode="numeric" value="'+x.l.qty+'" data-line="'+i+'" aria-label="الكمية"><button data-act="ldec" data-i="'+i+'" aria-label="إنقاص">−</button></div><button class="x" data-act="lrm" data-i="'+i+'">حذف</button></div></div><b class="price">'+fmt(priceFull(x.p,x.l.color,x.l.x)*x.l.qty)+'</b></div>'}).join("")+
   '<div class="total"><span>المنتجات</span><b id="tot">'+fmt(cartTotal())+'</b></div></section>'+
   '<section class="panel"><h2>معلومات التوصيل</h2><div class="fields">'+
   '<label class="f">الاسم الكامل<input id="f-name" data-f="name" value="'+esc(form.name)+'" autocomplete="name"></label>'+
@@ -511,7 +511,7 @@ function thanksView(){var o=S.lastOrder||{};
   return '<main class="wrap page thanks"><div class="panel ty"><div class="ty-ico" aria-hidden="true">✓</div><h1>شكراً '+esc(o.name||"")+'، وصلتنا طلبيتك 🌸</h1>'+
   '<div class="ty-no">رقم طلبيتك <b dir="ltr">#'+esc(o.no)+'</b></div>'+
   '<p class="muted" style="margin:0">سنتصل بك قريباً على الرقم <b dir="ltr">'+esc(o.phone||"")+'</b> لتأكيد الطلبية قبل إرسالها. احتفظ برقم طلبيتك.</p></div>'+
-  '<section class="panel"><h2>ملخص الطلبية</h2>'+(o.items||[]).map(function(it){return '<div class="line"><img src="'+esc(it.img)+'" alt=""><div class="line-meta"><span class="ref">'+esc(it.ref)+'</span><span class="small">'+(it.variant||[]).map(esc).join(" · ")+((it.variant||[]).length?' · ':'')+'الكمية: '+it.qty+'</span></div><b class="price">'+fmt(it.price*it.qty)+'</b></div>'}).join("")+
+  '<section class="panel"><h2>ملخص الطلبية</h2>'+(o.items||[]).map(function(it){return '<div class="line"><img src="'+esc(th(it.img))+'" alt=""><div class="line-meta"><span class="ref">'+esc(it.ref)+'</span><span class="small">'+(it.variant||[]).map(esc).join(" · ")+((it.variant||[]).length?' · ':'')+'الكمية: '+it.qty+'</span></div><b class="price">'+fmt(it.price*it.qty)+'</b></div>'}).join("")+
   (o.fee!=null?'<div class="total ship"><span>المنتجات</span><b>'+fmt(o.total)+'</b></div><div class="total ship"><span>التوصيل ('+(o.delivery==="مكتب"?"مكتب":"المنزل")+')</span><b>'+fmt(o.fee)+'</b></div><div class="total"><span>الإجمالي عند الاستلام</span><b>'+fmt(o.total+o.fee)+'</b></div><span class="muted small">'+esc(o.wilaya||"")+' · الدفع عند الاستلام.</span>':'<div class="total"><span>المجموع</span><b>'+fmt(o.total)+'</b></div><span class="muted small">سعر التوصيل يُحدَّد حسب الولاية ('+esc(o.wilaya||"")+'). الدفع عند الاستلام.</span>')+'</section>'+
   '<section class="panel"><button class="btn btn-main" data-act="go" data-v="shop">متابعة التسوق</button>'+(waPhone()?'<a class="btn" target="_blank" rel="noopener" href="https://wa.me/'+waPhone()+'?text='+encodeURIComponent("السلام عليكم، بخصوص طلبيتي رقم #"+o.no)+'">💬 تواصل معنا عبر واتساب</a>':'')+'</section></main>'}
 function shipQ(){var sh=data.shop.shipping||{},cs=sh.companies||[],c=null;for(var i=0;i<cs.length;i++)if(cs[i].id===sh.def)c=cs[i];c=c||cs[0];
@@ -524,6 +524,7 @@ function shipBox(){var q=shipQ(),t=cartTotal();
   if(q.nomode)return '<div class="shipwarn">'+(q.desk?"لا يوجد مكتب توصيل في هذه الولاية، اختر التوصيل إلى المنزل.":"التوصيل إلى المنزل غير متاح لهذه الولاية، اختر الاستلام من المكتب.")+'</div>';
   return '<div class="total ship"><span>التوصيل ('+(form.delivery==="مكتب"?"مكتب":"المنزل")+')</span><b>'+fmt(q.fee)+'</b></div><div class="total grand"><span>الإجمالي عند الاستلام</span><b>'+fmt(t+q.fee)+'</b></div><span class="muted small">الدفع عند الاستلام.</span>'}
 function updShip(){var b=document.getElementById("shipbox");if(b)b.innerHTML=shipBox()}
+function th(u){u=String(u||"");return /\/images\/[^\/]+\.jpg$/.test(u)?u.replace(/\/images\/([^\/]+)$/,"/images/t/$1"):u}
 function selectText(){var o=document.getElementById("otext");if(!o)return;var r=document.createRange();r.selectNodeContents(o);var s=getSelection();s.removeAllRanges();s.addRange(r);toast("حدّد النص وانسخه")}
 app.addEventListener("input",function(e){
   var t=e.target;
