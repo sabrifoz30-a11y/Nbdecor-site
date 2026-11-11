@@ -184,11 +184,12 @@ function nbTrack(ev,p,o){p=p||{};o=o||{};try{if(window.fbq)fbq("track",ev,p,o)}c
   try{if(window.ttq&&window.ttq.track){var tn={ViewContent:"ViewContent",AddToCart:"AddToCart",InitiateCheckout:"InitiateCheckout",Purchase:"CompletePayment"}[ev];if(!tn)return;
     var tp={content_type:"product"};if(p.value!=null){tp.value=p.value;tp.currency=p.currency||"DZD"}if(p.content_ids)tp.contents=p.content_ids.map(function(c){return{content_id:c,content_name:c}});if(p.num_items)tp.quantity=p.num_items;if(p.content_category)tp.description=p.content_category;
     ttq.track(tn,tp,o.eventID?{event_id:o.eventID}:{})}}catch(e){}}
+var STORE=(new URLSearchParams(location.search).get("s")||"nbdecor").toLowerCase().replace(/[^a-z0-9-]/g,"")||"nbdecor";
 var SB_URL="https://zlrqyramobfdyqikugut.supabase.co",SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpscnF5cmFtb2JmZHlxaWt1Z3V0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQxNTI5MTMsImV4cCI6MjEwOTcyODkxM30.fysYQOBxWIux6n1VDVvFpciXZg5-9FoWM29RKf-GrGI";
 (async function(){
   var h={"apikey":SB_KEY,"Authorization":"Bearer "+SB_KEY};
   try{
-    var r=await Promise.all([fetch(SB_URL+"/rest/v1/settings?select=data&id=eq.1",{headers:h}).then(function(x){return x.json()}),fetch(SB_URL+"/rest/v1/products?select=data&order=ref",{headers:h}).then(function(x){return x.json()})]);
+    var r=await Promise.all([fetch(SB_URL+"/rest/v1/settings?select=data&store_id=eq."+STORE,{headers:h}).then(function(x){return x.json()}),fetch(SB_URL+"/rest/v1/products?select=data&order=ref&store_id=eq."+STORE,{headers:h}).then(function(x){return x.json()})]);
     var d={shop:(r[0][0]||{}).data||{},products:r[1].map(function(x){return x.data})};
     document.getElementById("shop-data").textContent=JSON.stringify(d);
     var px=String(d.shop.fbPixel||"").replace(/\D/g,"");
@@ -501,7 +502,7 @@ async function placeOrder(){
   var items=cartLines().map(function(x){return{id:x.p.id,ref:x.p.ref,img:img(x.p,x.l.color),variant:varParts(x.p,x.l.color,x.l.x),color:x.l.color||"",x:x.l.x||{},qty:x.l.qty,price:priceFull(x.p,x.l.color,x.l.x)}});
   var w=form.wilaya?(form.wilaya+" - "+WILAYAS[form.wilaya-1]):"";
   var customer={name:form.name.trim(),phone:form.phone.trim(),wilaya:w,wilaya_no:String(form.wilaya),address:form.address.trim(),delivery:form.delivery,notes:form.notes||""};
-  try{var r=await fetch(SB_URL+"/rest/v1/rpc/place_order",{method:"POST",headers:{"apikey":SB_KEY,"Authorization":"Bearer "+SB_KEY,"Content-Type":"application/json"},body:JSON.stringify({customer:customer,items:items})});
+  try{var r=await fetch(SB_URL+"/rest/v1/rpc/place_order",{method:"POST",headers:{"apikey":SB_KEY,"Authorization":"Bearer "+SB_KEY,"Content-Type":"application/json"},body:JSON.stringify({customer:customer,items:items,store:STORE})});
     if(!r.ok)throw new Error(await r.text());var no=await r.json();
     var q=shipQ();S.lastOrder={no:no,name:customer.name,phone:customer.phone,wilaya:w,total:cartTotal(),fee:q&&q.fee!=null?q.fee:null,delivery:form.delivery,items:items};
     nbTrack("Purchase",{value:S.lastOrder.total,currency:"DZD",content_ids:items.map(function(i){return i.ref}),content_type:"product",num_items:items.reduce(function(s,i){return s+i.qty},0),order_id:String(no)},{eventID:"order-"+no});cart=[];saveCart();placing=false;S.view="thanks";render();window.scrollTo(0,0);
