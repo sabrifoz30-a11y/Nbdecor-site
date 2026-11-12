@@ -23,3 +23,10 @@ On every staff.html change bump both `APPV` in staff.html and `version.txt` to t
 - Still to do before selling: merchant sign-up + store creation, per-store order numbers (orders.id is a global sequence),
   worker phone logins are global (`<phone>@nbdecor.invalid`) so the same phone can't work in two stores,
   "store not found" page, platform-owner dashboard, subscriptions, paid Supabase plan + backups.
+
+## Later: Telegram channel import (planned, not started)
+- One platform bot; merchant adds it as channel admin -> new posts become products (albums = one product with variants), deleted post -> hide product. Optional: post new site products to the channel.
+- History: bot can't read old posts -> import Telegram Desktop "Export chat history" (JSON + photos).
+- Price: read caption first (per-channel rule: centimes "60 الف" = 600 DA, or dinars), else AI reads the photo; review page before publishing; warn when caption and photo disagree.
+- Owner has 3 channels (cosmetics, flowers, accessories): decide separate stores vs one store with categories. Separate stores need "one owner, several stores" + store switcher.
+- Test on owner's own channels first (start with flowers).
