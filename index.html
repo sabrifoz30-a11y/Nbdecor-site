@@ -190,7 +190,7 @@ var SB_URL="https://zlrqyramobfdyqikugut.supabase.co",SB_KEY="eyJhbGciOiJIUzI1Ni
   var h={"apikey":SB_KEY,"Authorization":"Bearer "+SB_KEY};
   try{
     var r=await Promise.all([fetch(SB_URL+"/rest/v1/settings?select=data&store_id=eq."+STORE,{headers:h}).then(function(x){return x.json()}),fetch(SB_URL+"/rest/v1/products?select=data&order=ref&store_id=eq."+STORE,{headers:h}).then(function(x){return x.json()})]);
-    var d={shop:(r[0][0]||{}).data||{},products:r[1].map(function(x){return x.data})};
+    var d={shop:(r[0][0]||{}).data||{},products:r[1].map(function(x){return x.data}).filter(function(p){return p&&!p.hidden})};
     document.getElementById("shop-data").textContent=JSON.stringify(d);
     var px=String(d.shop.fbPixel||"").replace(/\D/g,"");
     if(px&&d.shop.fbPixelOn!==false){!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version="2.0";n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,"script","https://connect.facebook.net/en_US/fbevents.js");fbq("init",px);fbq("track","PageView")}
