@@ -107,7 +107,8 @@ html{overflow-x:hidden;overscroll-behavior-x:none}body{overflow-x:clip;max-width
 .sck{width:24px;height:24px;border:2px solid var(--line);border-radius:6px;background:#fff;padding:0;cursor:pointer}.sck.on{background:var(--leaf);border-color:var(--leaf)}.sck.on::after{content:"✓";color:#fff;font-weight:800;font-size:14px}tr.son td{background:var(--ok-soft)}
 .pqrow{display:flex;gap:8px;align-items:center}.pqrow .search{margin:10px 0;flex:1}.pqrow .btn{flex:none}.pfp{border:1.5px solid var(--leaf)}
 .ctnrow td{padding-top:0!important;border-top:0}.ctnline{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:13px;color:#6b4e16;background:#fffaf0;border:1px dashed #e3cf9f;border-radius:10px;padding:6px 8px}.scost.sm{width:70px;padding:5px}.scost[disabled]{opacity:.45}
-</style><script>var APPV="76";(function(){try{fetch("version.txt?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(v){v=(v||"").trim();if(v&&v!==APPV&&sessionStorage.getItem("nbv")!==v){sessionStorage.setItem("nbv",v);location.replace(location.pathname+"?v="+v)}}).catch(function(){})}catch(e){}})();</script>
+.dmrow{display:flex;gap:8px;margin-bottom:10px}.dmrow input{flex:1;min-width:0;padding:12px;border:1px solid var(--line);border-radius:12px;font:inherit}.dmsave{width:auto;padding:12px 18px}.dnst{width:100%;table-layout:fixed;border-collapse:collapse;margin:8px 0;font-size:12.5px;background:#fff;border-radius:8px}.dnst td,.dnst th{border:1px solid #d6def5;padding:5px 6px;text-align:left;word-break:break-all;overflow-wrap:anywhere}.dnst tr>*:first-child{width:64px}.dnst tr>*:nth-child(2){width:50px}.tcard{min-width:0;max-width:100%;box-sizing:border-box}.twarn>span{min-width:0;flex:1}
+</style><script>var APPV="77";(function(){try{fetch("version.txt?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(v){v=(v||"").trim();if(v&&v!==APPV&&sessionStorage.getItem("nbv")!==v){sessionStorage.setItem("nbv",v);location.replace(location.pathname+"?v="+v)}}).catch(function(){})}catch(e){}})();</script>
 </head><body>
 <div id="app"><div class="empty">جارٍ التحميل…</div></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
@@ -905,16 +906,28 @@ function pickFiles(multi,cb){if(!PICK){PICK=document.createElement("input");PICK
 /* ===== system tools ===== */
 var TI={cache:'<path d="M20 11a8 8 0 0 0-14.9-3.9L3 9M4 13a8 8 0 0 0 14.9 3.9L21 15M3 4v5h5M21 20v-5h-5"/>',db:'<ellipse cx="12" cy="6" rx="7" ry="3"/><path d="M5 6v6c0 1.7 3.1 3 7 3s7-1.3 7-3V6M5 12v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6"/>',warn:'<path d="M12 4 2.5 20h19zM12 10v4M12 17.5v.5"/>',dl:'<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>'};
 function tico(k,c){return '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="'+(c||"currentColor")+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+TI[k]+'</svg>'}
+TI.globe='<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z"/>';
+function cleanDomain(v){v=String(v||"").trim().toLowerCase().replace(/^https?:\/\//,"").replace(/\/.*$/,"");return /^[a-z0-9-]+(\.[a-z0-9-]+)+$/.test(v)?v:""}
+function domainCard(st){var d=st.domain||"",apex=d&&d.split(".").length===2,host=d?(apex?"www."+d:d):"";
+  return '<section class="tcard"><div class="thead"><span class="ticon">'+tico("globe","#2b4fd1")+'</span><div><b>النطاق (الدومين)</b><span>اجعل متجرك على رابط باسمك، مثل nbdecor.com</span></div></div>'+
+  '<div class="dmrow"><input id="dm-in" dir="ltr" inputmode="url" autocomplete="off" placeholder="nbdecor.com" value="'+esc(d)+'"><button class="tbtn alt dmsave" data-act="dmsave">حفظ</button></div>'+
+  (d?'<div class="twarn" style="background:#eef3ff;color:#23408f"><span><b>لربط '+esc(d)+':</b><br>1. ادخل لوحة الشركة التي اشتريت منها النطاق ← إعدادات <b dir="ltr">DNS</b>، وأضف:'+
+    '<table class="dnst" dir="ltr"><tr><th>Type</th><th>Name</th><th>Value</th></tr>'+(apex?['185.199.108.153','185.199.109.153','185.199.110.153','185.199.111.153'].map(function(ip){return '<tr><td>A</td><td>@</td><td>'+ip+'</td></tr>'}).join("")+'<tr><td>CNAME</td><td>www</td><td>sabrifoz30-a11y.github.io</td></tr>':'<tr><td>CNAME</td><td>'+esc(d.split(".")[0])+'</td><td>sabrifoz30-a11y.github.io</td></tr>')+'</table>'+
+    '2. أخبر Claude باسم النطاق ليفعّله في GitHub.<br>3. انتظر من ساعة إلى 24 ساعة حتى يعمل، ثم يُفعَّل القفل 🔒 (HTTPS) وحده.</span></div>'+
+    '<div class="meta">بعد التفعيل: المتجر <b dir="ltr">https://'+esc(apex?d:d)+'/</b> · لوحة التحكم <b dir="ltr">https://'+esc(apex?d:d)+'/staff.html</b></div>':
+   '<p class="meta" style="margin:0">ليس عندك نطاق؟ تشتريه من شركات مثل Namecheap أو GoDaddy بحوالي 10 إلى 15 دولاراً في السنة.</p>')+'</section>'}
 function toolsView(){var st=S.settings||{},fr=st.forceRev;
   return '<main class="wrap page"><h1 class="th1"><span class="tbadge">'+ico("tools")+'</span>أدوات النظام</h1>'+
   '<section class="tcard"><div class="thead"><span class="ticon">'+tico("cache","#2b4fd1")+'</span><div><b>إدارة الكاش (Cache)</b><span>تحديث البيانات والأسعار فوراً للزوار</span></div></div>'+
   '<div class="twarn">'+tico("warn","#a0521a")+'<span>استخدم هذه الأداة إذا غيّرت أسعار التوصيل أو إعدادات المتجر أو الصور ولم تظهر التغييرات للزوار. كل زائر يفتح المتجر بعدها يحصل على آخر نسخة مباشرة، وتبقى سلته كما هي.</span></div>'+
   '<button class="tbtn" data-act="cacheclear"'+(S.cbusy?' disabled':'')+'>'+tico("db","#fff")+(S.cbusy?'جارٍ المسح…':'مسح التخزين المؤقت للنظام')+'</button>'+
   (fr?'<div class="meta" style="margin-top:8px">آخر مسح: '+when(fr)+'</div>':'')+'</section>'+
-  '<section class="tcard"><div class="thead"><span class="ticon">'+tico("dl","#2b4fd1")+'</span><div><b>نسخة احتياطية</b><span>حمّل كل بيانات متجرك في ملف واحد</span></div></div>'+
+  domainCard(st)+'<section class="tcard"><div class="thead"><span class="ticon">'+tico("dl","#2b4fd1")+'</span><div><b>نسخة احتياطية</b><span>حمّل كل بيانات متجرك في ملف واحد</span></div></div>'+
   '<p class="meta" style="margin:0 0 10px">المنتجات، الطلبيات، الزبائن، الموردون وسجل الديون، والإعدادات. احفظ الملف في هاتفك أو Google Drive كل أسبوع.</p>'+
   '<button class="tbtn alt" data-act="backup"'+(S.bbusy?' disabled':'')+'>'+tico("dl","#2b4fd1")+(S.bbusy?'جارٍ التحضير…':'تحميل النسخة الاحتياطية')+'</button></section></main>'}
 async function toolsClick(a){
+  if(a==="dmsave"){var raw=document.getElementById("dm-in").value,d=cleanDomain(raw);if(raw.trim()&&!d){toast("اكتب النطاق هكذا: nbdecor.com");return true}
+    var patch={domain:d||null};if(d)patch.shopUrl="https://"+d+"/";else patch.shopUrl=null;var e=await saveSettingsPatch(patch);render();toast(e?"تعذّر الحفظ":d?"✅ حُفظ النطاق: "+d:"أُزيل النطاق");return true}
   if(a==="cacheclear"){S.cbusy=true;render();var now=new Date().toISOString(),e=await saveSettingsPatch({forceRev:now});
     try{if(window.caches){var ks=await caches.keys();for(var i=0;i<ks.length;i++)await caches.delete(ks[i])}}catch(x){}
     try{if(navigator.serviceWorker){var rs=await navigator.serviceWorker.getRegistrations();rs.forEach(function(r){r.unregister()})}}catch(x){}
