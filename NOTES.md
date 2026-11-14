@@ -30,3 +30,7 @@ On every staff.html change bump both `APPV` in staff.html and `version.txt` to t
 - Price: read caption first (per-channel rule: centimes "60 الف" = 600 DA, or dinars), else AI reads the photo; review page before publishing; warn when caption and photo disagree.
 - Owner has 3 channels (cosmetics, flowers, accessories): decide separate stores vs one store with categories. Separate stores need "one owner, several stores" + store switcher.
 - Test on owner's own channels first (start with flowers).
+
+## Domain
+- Shop: https://styledecordz.store/ (CNAME file in repo; DNS at Spaceship: 4 A records to GitHub Pages + CNAME www -> sabrifoz30-a11y.github.io).
+- Product image URLs now point to https://styledecordz.store/images/ ; settings.shopUrl used by Meta/TikTok server events.
