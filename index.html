@@ -170,6 +170,7 @@ label.f{display:grid;gap:5px;font-size:13.5px;font-weight:500;min-width:0}
 .new{font-size:11px;background:var(--leaf);color:var(--leaf-ink);border-radius:6px;padding:1px 7px}
 @media (prefers-reduced-motion:no-preference){.card{transition:border-color .15s}.card:hover{border-color:var(--leaf)}}
 
+.home-h{font-size:20px;margin:16px 0 10px;text-align:center}.ctiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding-bottom:30px}.ctile{position:relative;border:0;padding:0;border-radius:16px;overflow:hidden;aspect-ratio:3/4;background:var(--surface);box-shadow:0 2px 10px rgba(0,0,0,.08);cursor:pointer}.ctile.all{grid-column:1/-1;aspect-ratio:16/9}.ctile img{width:100%;height:100%;object-fit:cover;display:block}.ct-l{position:absolute;inset:auto 0 0 0;padding:28px 12px 10px;background:linear-gradient(transparent,rgba(0,0,0,.72));color:#fff;display:grid;text-align:start}.ct-l b{font-size:18px}.ct-l small{opacity:.9}.backcats{display:block;margin:12px auto 0}
 #shipbox{display:grid;gap:6px}.total.ship{font-weight:400;font-size:15px}.total.ship b{font-weight:700}.total.grand b{font-size:20px}.shipwarn{background:#fff4e5;color:#8a4b00;border-radius:10px;padding:10px 12px;font-size:14px}
 .ty{text-align:center;justify-items:center}
 .ty-ico{width:64px;height:64px;border-radius:50%;background:var(--leaf);color:var(--leaf-ink);font-size:34px;font-weight:700;display:grid;place-items:center}
@@ -219,7 +220,7 @@ data.products.forEach(function(p){if(!p.cat||data.shop.cats.indexOf(p.cat)<0)p.c
 function load(k){try{return JSON.parse(localStorage.getItem("warda-"+k))}catch(e){return null}}
 function store(k,v){try{localStorage.setItem("warda-"+k,JSON.stringify(v))}catch(e){}}
 
-var S={cat:"",upCat:"",newCat:"",view:"shop",sort:"asc",q:"",admin:false,dirty:false,sel:{},need:{},pasted:"",busy:"",bad:{},canRead:false};
+var S={home:true,cat:"",upCat:"",newCat:"",view:"shop",sort:"asc",q:"",admin:false,dirty:false,sel:{},need:{},pasted:"",busy:"",bad:{},canRead:false};
 var cart=load("cart")||[];
 var form=Object.assign({name:"",phone:"",wilaya:"",address:"",delivery:"منزل",notes:""},load("form")||{});
 var cap={artifact:null,assets:null,sample:null};
@@ -294,7 +295,7 @@ function toast(msg){var t=document.querySelector(".toast");if(!t){t=document.cre
 
 /* ---------- views ---------- */
 function header(){
-  return '<header class="top"><div class="wrap"><div class="brand"><button class="brand-name" data-act="go" data-v="shop">'+esc(data.shop.name)+'</button><span class="brand-sub">ورد اصطناعي بالجملة</span></div><div class="nav">'+
+  return '<header class="top"><div class="wrap"><div class="brand"><button class="brand-name" data-act="home">'+esc(data.shop.name)+'</button><span class="brand-sub">ورد اصطناعي بالجملة</span></div><div class="nav">'+
   (S.admin?'<button class="btn btn-sm" data-act="go" data-v="'+(S.view==="admin"?"shop":"admin")+'">'+(S.view==="admin"?"عرض المتجر":"لوحة التاجر")+'</button>':'')+
   '<button class="btn" data-act="go" data-v="cart" aria-label="السلة">السلة <span class="count" id="cc">'+cartCount()+'</span></button></div></div></header>';
 }
@@ -337,10 +338,15 @@ function gridHtml(){
   if(!list.length)return '<div class="empty">'+(q?'لا يوجد منتج بهذا المرجع.':'لا توجد منتجات في هذا التصنيف بعد.')+'</div>';
   return list.map(card).join("");
 }
-function shopView(){
+window.addEventListener("popstate",function(){if(S.view==="shop"&&!S.home){S.home=true;render();window.scrollTo(0,0)}});
+function catImg(c){var m=(data.shop.catImgs||{})[c];if(m)return m;var p=data.products.find(function(x){return !c||x.cat===c});return p?th(img(p)):""}
+function homeView(){var cats=data.shop.cats||[];var tiles=[["",'كل المنتجات']].concat(cats.map(function(c){return[c,c]}));
+  return '<main class="wrap">'+(data.shop.note?'<div class="note">'+esc(data.shop.note)+'</div>':'')+'<h1 class="home-h">اختر ما تبحث عنه 🌸</h1><div class="ctiles">'+tiles.map(function(t){var n=data.products.filter(function(p){return !t[0]||p.cat===t[0]}).length,u=t[0]?catImg(t[0]):((data.shop.catImgs||{})["__all"]||catImg(""));
+    return '<button class="ctile'+(t[0]?'':' all')+'" data-act="gocat" data-v="'+esc(t[0])+'">'+(u?'<img src="'+esc(u)+'" alt="" loading="lazy" decoding="async">':'')+'<span class="ct-l"><b>'+esc(t[1])+'</b><small>'+n+' منتج</small></span></button>'}).join("")+'</div></main>'}
+function shopView(){if(S.home&&(data.shop.cats||[]).length>1)return homeView();
   var n=cartCount();
   return '<main class="wrap">'+(data.shop.note?'<div class="note">'+esc(data.shop.note)+'</div>':'')+
-  '<nav class="cats" aria-label="التصنيفات">'+[""].concat(data.shop.cats).map(function(c){var n=data.products.filter(function(p){return !c||p.cat===c}).length;return '<button class="cat" data-act="cat" data-v="'+esc(c)+'" aria-pressed="'+(S.cat===c)+'">'+(c?esc(c):'الكل')+' <span>'+n+'</span></button>'}).join("")+'</nav>'+
+  ((data.shop.cats||[]).length>1?'<button class="x backcats" data-act="home">← كل التصنيفات</button>':'')+'<nav class="cats" aria-label="التصنيفات">'+[""].concat(data.shop.cats).map(function(c){var n=data.products.filter(function(p){return !c||p.cat===c}).length;return '<button class="cat" data-act="cat" data-v="'+esc(c)+'" aria-pressed="'+(S.cat===c)+'">'+(c?esc(c):'الكل')+' <span>'+n+'</span></button>'}).join("")+'</nav>'+
   '<div class="tools"><input id="q" class="search" type="search" placeholder="ابحث بالمرجع…" value="'+esc(S.q)+'" aria-label="بحث بالمرجع">'+
   '<div class="seg" role="group" aria-label="ترتيب حسب السعر"><button data-act="sort" data-v="asc" aria-pressed="'+(S.sort==="asc")+'">الأرخص أولاً</button><button data-act="sort" data-v="desc" aria-pressed="'+(S.sort==="desc")+'">الأغلى أولاً</button></div>'+
   '<span class="muted small" id="pc">'+data.products.length+' منتج</span></div>'+
@@ -468,6 +474,8 @@ app.addEventListener("click",function(e){
     nbTrack("AddToCart",{value:Object.keys(mm).reduce(function(s,o){return s+(+mm[o]||0)*priceOf(pm,o)},0),currency:"DZD",content_ids:[pm.ref],content_name:pm.ref,content_type:"product"});saveCart();S.sel[id]={m:{}};delete S.need[id];mqSync(id);syncCart();toast("أُضيف "+added+" قطعة من "+pm.ref+" إلى السلة")}
   else if(act==="xopt"){sel.x=sel.x||{};var xi=b.dataset.i;sel.x[xi]=sel.x[xi]===b.dataset.c?"":b.dataset.c;syncCard(id)}
   else if(act==="gal"){var g=document.querySelector('[data-gal="'+id+'"]');if(g){var cur=Math.round(g.scrollLeft/g.clientWidth);galGo(id,cur+(+b.dataset.d),true)}}
+  else if(act==="gocat"){S.cat=b.dataset.v;S.home=false;try{history.pushState({c:1},"")}catch(e){}render();window.scrollTo(0,0);nbTrack("ViewContent",{content_category:S.cat||"الكل",content_type:"product_group"})}
+  else if(act==="home"){S.home=true;S.view="shop";render();window.scrollTo(0,0)}
   else if(act==="cat"){S.cat=b.dataset.v;render();nbTrack("ViewContent",{content_category:S.cat||"الكل",content_type:"product_group"})}
   else if(act==="catadd"){var nc=String(S.newCat||"").trim();if(!nc){toast("اكتب اسم التصنيف أولاً");return}if(data.shop.cats.indexOf(nc)>-1){toast("هذا التصنيف موجود");return}data.shop.cats.push(nc);S.newCat="";S.upCat=nc;S.dirty=true;render();toast("أُنشئ التصنيف «"+nc+"»")}
   else if(act==="catdel"){var k=+b.dataset.k,old=data.shop.cats[k];if(data.shop.cats.length<2)return;data.shop.cats.splice(k,1);var to=data.shop.cats[0],moved=0;data.products.forEach(function(p){if(p.cat===old){p.cat=to;moved++}});if(S.upCat===old)S.upCat="";if(S.cat===old)S.cat="";S.dirty=true;render();toast("حُذف «"+old+"»"+(moved?" ونُقل "+moved+" منتج إلى «"+to+"»":""))}
