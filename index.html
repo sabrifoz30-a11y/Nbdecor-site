@@ -338,6 +338,7 @@ function abSave(){clearTimeout(abT);abT=setTimeout(function(){try{if(placing||!c
   var w=form.wilaya?(form.wilaya+" - "+WILAYAS[form.wilaya-1]):"";
   var cu={name:(form.name||"").trim(),phone:(form.phone||"").trim(),wilaya:w,wilaya_no:form.wilaya?String(form.wilaya):"",commune:form.commune||"",commune_ar:form.commune?comAr(form.commune):"",address:(form.address||"").trim(),delivery:form.delivery||""};
   fetch(SB_URL+"/rest/v1/rpc/save_abandoned",{method:"POST",keepalive:true,headers:{"apikey":SB_KEY,"Authorization":"Bearer "+SB_KEY,"Content-Type":"application/json"},body:JSON.stringify({store:STORE,sid:abSid(),customer:cu,items:items,total:cartTotal()})}).catch(function(){})}catch(e){}},1500)}
+var ft0=0;function devId(){var v=null;try{v=localStorage.getItem("nb-dev")}catch(e){}if(!v||!/^[a-z0-9]{8,40}$/.test(v)){v=(Date.now().toString(36)+Math.random().toString(36).slice(2,10)).replace(/[^a-z0-9]/g,"");try{localStorage.setItem("nb-dev",v)}catch(e){}}return v}
 function abDone(){clearTimeout(abT);try{localStorage.removeItem("nb-sid")}catch(e){}}
 var alertT;
 function bigAlert(title,sub){var a=document.querySelector(".alert");if(!a){a=document.createElement("div");a.className="alert";a.setAttribute("role","alert");document.body.appendChild(a);a.addEventListener("click",function(){a.hidden=true})}
@@ -426,7 +427,7 @@ function cartView(){
   return '<main class="wrap page"><h1>سلتك</h1>'+
   '<section class="panel">'+lines.map(function(x,i){return '<div class="line"><img src="'+esc(th(img(x.p,x.l.color)))+'" alt=""><div class="line-meta"><div class="info"><span class="ref">'+(x.p.name?esc(x.p.name)+' · ':'')+esc(x.p.ref)+'</span></div><span class="small">'+lineParts(x.p,x.l).map(function(v){return esc(v)+' · '}).join("")+''+fmt(linePrice(x.p,x.l))+(x.l.ct?' للكرطون':' للقطعة')+'</span><div class="row"><div class="step"><button data-act="linc" data-i="'+i+'" aria-label="زيادة">+</button><input id="l-'+i+'" type="number" min="1" inputmode="numeric" value="'+x.l.qty+'" data-line="'+i+'" aria-label="الكمية"><button data-act="ldec" data-i="'+i+'" aria-label="إنقاص">−</button></div><button class="x" data-act="lrm" data-i="'+i+'">حذف</button></div></div><b class="price">'+fmt(linePrice(x.p,x.l)*x.l.qty)+'</b></div>'}).join("")+
   '<div class="total"><span>المنتجات</span><b id="tot">'+fmt(cartTotal())+'</b></div></section>'+
-  '<section class="panel dlv"><h2>معلومات التوصيل</h2>'+
+  '<section class="panel dlv"><h2>معلومات التوصيل</h2>'+'<input id="f-hp" name="nb_hpf" type="text" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">'+
   fld('name','الاسم الكامل','<input id="f-name" data-f="name" value="'+esc(form.name)+'" autocomplete="name" placeholder="مثال: محمد بن علي">')+
   fld('phone','رقم الهاتف','<input id="f-phone" data-f="phone" type="tel" inputmode="tel" dir="ltr" placeholder="06 12 34 56 78" value="'+esc(form.phone)+'" autocomplete="tel">','نتصل بك على هذا الرقم لتأكيد الطلبية')+
   fld('wilaya','الولاية','<select id="f-wilaya" data-f="wilaya">'+opts+'</select>')+
@@ -567,7 +568,7 @@ async function placeOrder(){
   if(placing)return;var sq=shipQ();if(sq&&(sq.none||sq.nomode)){toast(sq.none?"التوصيل غير متاح لهذه الولاية حالياً":"اختر طريقة توصيل متاحة لولايتك");return}placing=true;var a=document.getElementById("send");if(a){a.setAttribute("aria-disabled","true");a.textContent="جارٍ إرسال الطلبية…"}
   var items=cartLines().map(function(x){return{id:x.p.id,ref:x.p.ref,name:x.p.name||undefined,img:img(x.p,x.l.color),variant:lineParts(x.p,x.l),note:(x.l.note||"").trim()||undefined,color:x.l.color||"",x:x.l.x||{},qty:x.l.qty,price:linePrice(x.p,x.l),carton:x.l.ct&&ctnOf(x.p)?ctnOf(x.p).qty:undefined}});
   var w=form.wilaya?(form.wilaya+" - "+WILAYAS[form.wilaya-1]):"";
-  var customer={name:form.name.trim(),phone:form.phone.trim(),wilaya:w,wilaya_no:String(form.wilaya),commune:form.commune||"",commune_ar:comAr(form.commune),address:form.address.trim(),delivery:form.delivery,notes:form.notes||""};
+  var customer={name:form.name.trim(),phone:form.phone.trim(),wilaya:w,wilaya_no:String(form.wilaya),commune:form.commune||"",commune_ar:comAr(form.commune),address:form.address.trim(),delivery:form.delivery,notes:form.notes||""};try{var hpe=document.getElementById("f-hp");customer._hp=hpe?hpe.value:"";if(ft0)customer._ft=Math.round((Date.now()-ft0)/100)/10;customer._dev=devId()}catch(e){}
   try{var r=await fetch(SB_URL+"/rest/v1/rpc/place_order",{method:"POST",headers:{"apikey":SB_KEY,"Authorization":"Bearer "+SB_KEY,"Content-Type":"application/json"},body:JSON.stringify({customer:customer,items:items,store:STORE})});
     if(!r.ok)throw new Error(await r.text());var no=await r.json();
     var q=shipQ();S.lastOrder={no:no,name:customer.name,phone:customer.phone,wilaya:w,total:cartTotal(),fee:q&&q.fee!=null?q.fee:null,delivery:form.delivery,items:items};
@@ -661,7 +662,7 @@ app.addEventListener("input",function(e){if(e.target.dataset&&e.target.dataset.p
   else if(t.dataset.mq){var sq=S.sel[t.dataset.mq]=S.sel[t.dataset.mq]||{m:{}};sq.m=sq.m||{};sq.m[t.dataset.c]=Math.max(0,parseInt(t.value,10)||0);mqSync(t.dataset.mq)}
   else if(t.dataset.qty){var s=S.sel[t.dataset.qty]=S.sel[t.dataset.qty]||{qty:1,color:""};s.qty=Math.max(1,parseInt(t.value,10)||1)}
   else if(t.dataset.line){var v=parseInt(t.value,10);if(v>0){cartLines()[t.dataset.line].l.qty=v;saveCart();refreshSend()}}
-  else if(t.dataset.f){form[t.dataset.f]=t.value;if(t.dataset.f==="wilaya")form.commune="";store("form",form);refreshSend();updShip();if(t.dataset.f==="wilaya"||t.dataset.f==="delivery")loadCom();if(t.dataset.f==="wilaya")reDl();var fk=t.dataset.f;if(fk==="phone"?dzOk(form.phone):String(form[fk]||"").trim())clearErr(fk);abSave()}
+  else if(t.dataset.f){form[t.dataset.f]=t.value;if(t.dataset.f==="wilaya")form.commune="";store("form",form);refreshSend();updShip();if(t.dataset.f==="wilaya"||t.dataset.f==="delivery")loadCom();if(t.dataset.f==="wilaya")reDl();var fk=t.dataset.f;if(fk==="phone"?dzOk(form.phone):String(form[fk]||"").trim())clearErr(fk);if(!ft0)ft0=Date.now();abSave()}
   else if(t.id==="newcat"){S.newCat=t.value}
   else if(t.dataset.catname){var ci=+t.dataset.catname,ov=data.shop.cats[ci],nv=t.value;data.shop.cats[ci]=nv;data.products.forEach(function(p){if(p.cat===ov)p.cat=nv});if(S.upCat===ov)S.upCat=nv;S.dirty=true;var sb2=document.querySelector(".savebar");if(!sb2)render()}
   else if(t.dataset.upcat){S.upCat=t.value}
