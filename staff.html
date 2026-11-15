@@ -115,7 +115,7 @@ html{overflow-x:hidden;overscroll-behavior-x:none}body{overflow-x:clip;max-width
 .shipco{border:2px solid #2b4fd1}.shipco.ok{border-color:#1f7a45;background:#f2fbf5}
 .phfix{display:flex;gap:6px;margin-top:8px}.phfix input{flex:1;min-width:0;padding:10px;border:1px solid var(--line);border-radius:10px;font:inherit}
 .inote{margin-top:4px;background:#fff7e0;border:1px solid #f0d68a;color:#6b4e16;border-radius:8px;padding:4px 8px;font-size:13px;font-weight:600}
-</style><script>var APPV="87";(function(){try{fetch("version.txt?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(v){v=(v||"").trim();if(v&&v!==APPV&&sessionStorage.getItem("nbv")!==v){sessionStorage.setItem("nbv",v);location.replace(location.pathname+"?v="+v)}}).catch(function(){})}catch(e){}})();</script>
+</style><script>var APPV="88";(function(){try{fetch("version.txt?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(v){v=(v||"").trim();if(v&&v!==APPV&&sessionStorage.getItem("nbv")!==v){sessionStorage.setItem("nbv",v);location.replace(location.pathname+"?v="+v)}}).catch(function(){})}catch(e){}})();</script>
 </head><body>
 <div id="app"><div class="empty">جارٍ التحميل…</div></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
@@ -943,10 +943,12 @@ function toolsView(){var st=S.settings||{},fr=st.forceRev;
   '<div class="twarn">'+tico("warn","#a0521a")+'<span>استخدم هذه الأداة إذا غيّرت أسعار التوصيل أو إعدادات المتجر أو الصور ولم تظهر التغييرات للزوار. كل زائر يفتح المتجر بعدها يحصل على آخر نسخة مباشرة، وتبقى سلته كما هي.</span></div>'+
   '<button class="tbtn" data-act="cacheclear"'+(S.cbusy?' disabled':'')+'>'+tico("db","#fff")+(S.cbusy?'جارٍ المسح…':'مسح التخزين المؤقت للنظام')+'</button>'+
   (fr?'<div class="meta" style="margin-top:8px">آخر مسح: '+when(fr)+'</div>':'')+'</section>'+
+  '<section class="tcard"><div class="thead"><span class="ticon" style="font-size:24px">🛒</span><div><b>أقل كمية للطلب</b><span>عدد القطع الأدنى في الطلبية (من منتجات مختلفة)</span></div></div><div class="dmrow"><input id="minq" type="number" inputmode="numeric" min="0" value="'+(st.minQty!=null?st.minQty:10)+'"><button class="tbtn alt dmsave" data-act="minqsave">حفظ</button></div><span class="meta">الكرطون يُحسب بعدد قطعه. اكتب 0 لإلغاء الحد الأدنى.</span></section>'+
   domainCard(st)+'<section class="tcard"><div class="thead"><span class="ticon">'+tico("dl","#2b4fd1")+'</span><div><b>نسخة احتياطية</b><span>حمّل كل بيانات متجرك في ملف واحد</span></div></div>'+
   '<p class="meta" style="margin:0 0 10px">المنتجات، الطلبيات، الزبائن، الموردون وسجل الديون، والإعدادات. احفظ الملف في هاتفك أو Google Drive كل أسبوع.</p>'+
   '<button class="tbtn alt" data-act="backup"'+(S.bbusy?' disabled':'')+'>'+tico("dl","#2b4fd1")+(S.bbusy?'جارٍ التحضير…':'تحميل النسخة الاحتياطية')+'</button></section></main>'}
 async function toolsClick(a){
+  if(a==="minqsave"){var v=parseInt(document.getElementById("minq").value,10);if(isNaN(v)||v<0){toast("اكتب رقماً صحيحاً");return true}var e0=await saveSettingsPatch({minQty:v});render();toast(e0?"تعذّر الحفظ":v?"✅ أقل كمية للطلب: "+v+" قطع":"أُلغي الحد الأدنى");return true}
   if(a==="dmsave"){var raw=document.getElementById("dm-in").value,d=cleanDomain(raw);if(raw.trim()&&!d){toast("اكتب النطاق هكذا: nbdecor.com");return true}
     var patch={domain:d||null};if(d)patch.shopUrl="https://"+d+"/";else patch.shopUrl=null;var e=await saveSettingsPatch(patch);render();toast(e?"تعذّر الحفظ":d?"✅ حُفظ النطاق: "+d:"أُزيل النطاق");return true}
   if(a==="cacheclear"){S.cbusy=true;render();var now=new Date().toISOString(),e=await saveSettingsPatch({forceRev:now});

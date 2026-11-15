@@ -170,6 +170,7 @@ label.f{display:grid;gap:5px;font-size:13.5px;font-weight:500;min-width:0}
 .new{font-size:11px;background:var(--leaf);color:var(--leaf-ink);border-radius:6px;padding:1px 7px}
 @media (prefers-reduced-motion:no-preference){.card{transition:border-color .15s}.card:hover{border-color:var(--leaf)}}
 
+.ctnl{font-size:14px;color:#6b4e16;background:#fffaf0;border:1px dashed #e3cf9f;border-radius:8px;padding:4px 8px;margin-top:4px;width:fit-content}.ctnl b{color:var(--petal)}.minbox{background:#fff4e5;color:#8a4b00;border-radius:10px;padding:10px 12px;font-size:14.5px;margin-bottom:8px;line-height:1.7}
 .gslide{flex:0 0 100%;width:100%;height:100%;position:relative;scroll-snap-align:start}.gslide img{width:100%;height:100%;object-fit:contain;display:block}.glab{position:absolute;top:10px;left:50%;transform:translateX(-50%);white-space:nowrap;background:rgba(31,74,58,.9);color:#fff;font-weight:700;font-size:15px;border-radius:999px;padding:5px 12px;pointer-events:none}
 .pnote{width:100%;box-sizing:border-box;margin-top:8px;padding:10px;border:1px dashed var(--line);border-radius:10px;background:#fffdf8;font:inherit}
 .lnote{width:100%;box-sizing:border-box;margin-top:6px;padding:9px 10px;border:1px dashed var(--line);border-radius:10px;background:#fffdf8;font:inherit}
@@ -324,7 +325,7 @@ function mqMode(p){return options(p).length>=2&&!xdims(p).some(function(d){retur
 function mqTotal(p,m){var q=0,t=0;Object.keys(m||{}).forEach(function(o){var n=+m[o]||0;if(n>0){q+=n;t+=n*priceOf(p,o)}});return{q:q,t:t}}
 function mqCard(p){var sel=S.sel[p.id]||{m:{}},m=sel.m||{},cols=options(p),tt=mqTotal(p,m);
   return '<article class="card" data-card="'+p.id+'">'+gallery(p,0)+'<div class="body">'+(p.name?'<h3 class="pname">'+esc(p.name)+'</h3>':'')+
-  '<div class="info"><span class="ref">'+esc(p.ref)+'</span><span class="price" data-price="'+p.id+'">'+cardPriceText(p,"",{})+'</span></div>'+(p.stems>0?'<span class="small muted">عدد الورد: '+p.stems+'</span>':'')+
+  '<div class="info"><span class="ref">'+esc(p.ref)+'</span><span class="price" data-price="'+p.id+'">'+cardPriceText(p,"",{})+'</span></div>'+ctnLine(p)+(p.stems>0?'<span class="small muted">عدد الورد: '+p.stems+'</span>':'')+
   '<div class="mq'+(S.need[p.id]?' need':'')+'" role="group" aria-label="الكمية لكل '+esc(kindWord(p))+'"><span class="xlab">اختر الكمية لكل '+esc(kindWord(p).replace(/^ال/,""))+':</span>'+cols.map(function(c){var n=+m[c]||0;return '<div class="mqr'+(n>0?' on':'')+'"><button class="mql" data-act="mqlook" data-id="'+p.id+'" data-c="'+esc(c)+'">'+(isColor(p)?'<i style="background:'+hex(c)+'"></i>':'')+'<span>'+esc(optLabel(p,c))+'</span>'+(priceRange0(p)?'<small>'+fmt(priceOf(p,c))+'</small>':'')+'</button><div class="step stp"><button data-act="mqinc" data-id="'+p.id+'" data-c="'+esc(c)+'" aria-label="زيادة '+esc(c)+'">+</button><input type="number" inputmode="numeric" min="0" value="'+n+'" data-mq="'+p.id+'" data-c="'+esc(c)+'" aria-label="كمية '+esc(c)+'"><button data-act="mqdec" data-id="'+p.id+'" data-c="'+esc(c)+'" aria-label="إنقاص '+esc(c)+'">−</button></div></div>'}).join("")+'</div>'+
   '<div class="mqsum" data-mqsum="'+p.id+'"'+(tt.q?'':' hidden')+'>المختار: <b>'+tt.q+' قطعة</b> · <b>'+fmt(tt.t)+'</b></div>'+
   pnoteInput(p.id)+'<button class="add" data-act="mqadd" data-id="'+p.id+'">أضف إلى السلة</button>'+(ctnOf(p)?'<button class="ctn" data-act="ctadd" data-id="'+p.id+'">📦 خذ كرطوناً ('+ctnOf(p).qty+' قطعة): القطعة بـ <b>'+fmt(Math.round(ctnOf(p).price/ctnOf(p).qty))+'</b> <small>· الكرطون '+fmt(ctnOf(p).price)+'</small></button>':'')+'</div></article>'}
@@ -336,7 +337,7 @@ function card(p){
   if(mqMode(p))return mqCard(p);
   var sel=S.sel[p.id]||{qty:1,color:"",x:{}};var cols=options(p);
   return '<article class="card" data-card="'+p.id+'">'+gallery(p,imgIndex(p,sel.color))+'<div class="body">'+(p.name?'<h3 class="pname">'+esc(p.name)+'</h3>':'')+
-  '<div class="info"><span class="ref">'+esc(p.ref)+'</span><span class="price" data-price="'+p.id+'">'+cardPriceText(p,sel.color,sel.x)+'</span></div>'+(p.stems>0?'<span class="small muted">عدد الورد: '+p.stems+'</span>':'')+
+  '<div class="info"><span class="ref">'+esc(p.ref)+'</span><span class="price" data-price="'+p.id+'">'+cardPriceText(p,sel.color,sel.x)+'</span></div>'+ctnLine(p)+(p.stems>0?'<span class="small muted">عدد الورد: '+p.stems+'</span>':'')+
   (cols.length?'<div class="colors'+(S.need[p.id]?' need':'')+'" role="group" aria-label="'+kindWord(p)+'">'+cols.map(function(c){return '<button class="chip" data-act="color" data-id="'+p.id+'" data-c="'+esc(c)+'" aria-pressed="'+(sel.color===c)+'">'+(isColor(p)?'<i style="background:'+hex(c)+'"></i>':'')+esc(optLabel(p,c))+(priceRange0(p)?' <small>· '+fmt(priceOf(p,c))+'</small>':'')+'</button>'}).join("")+'</div>'+(S.need[p.id]&&!sel.color?'<span class="hint">اختر '+kindWord(p)+' أولاً</span>':''):'')+
   xdims(p).map(function(d,i){var xs=sel.x||{},os=xOpts(d);if(!os.length)return "";var hp=os.some(function(o){return xPrice(d,o)>0});return '<div class="colors xg'+(S.need[p.id]&&!xs[i]?' need':'')+'" data-xg="'+i+'" role="group" aria-label="'+esc(xKind(d))+'"><span class="xlab">'+esc(xKind(d))+':</span>'+os.map(function(o){return '<button class="chip" data-act="xopt" data-id="'+p.id+'" data-i="'+i+'" data-c="'+esc(o)+'" aria-pressed="'+(xs[i]===o)+'">'+(d.t==="color"?'<i style="background:'+hex(o)+'"></i>':'')+esc(o)+(hp&&xPrice(d,o)>0?' <small>· '+fmt(xPrice(d,o))+'</small>':'')+'</button>'}).join("")+'</div>'}).join("")+
   pnoteInput(p.id)+'<div class="buy"><div class="step"><button data-act="inc" data-id="'+p.id+'" aria-label="زيادة">+</button><input id="q-'+p.id+'" type="number" inputmode="numeric" min="1" value="'+sel.qty+'" data-qty="'+p.id+'" aria-label="الكمية"><button data-act="dec" data-id="'+p.id+'" aria-label="إنقاص">−</button></div>'+
@@ -385,7 +386,7 @@ function orderText(){
 }
 function waPhone(){var d=String(data.shop.phone||"").replace(/\D/g,"");if(d.indexOf("00")===0)d=d.slice(2);if(d.charAt(0)==="0")d="213"+d.slice(1);return d}
 function waHref(){return "https://wa.me/"+waPhone()+"?text="+encodeURIComponent(orderText())}
-function formOk(){return comOk()&&form.name.trim()&&dzOk(form.phone)&&form.wilaya&&form.address.trim()}
+function formOk(){return minOk()&&comOk()&&form.name.trim()&&dzOk(form.phone)&&form.wilaya&&form.address.trim()}
 function cartView(){
   var lines=cartLines();
   if(!lines.length)return '<main class="wrap page"><h1>سلتك</h1><div class="panel empty">السلة فارغة. اختر منتجاتك من المتجر ثم ارجع هنا.<div><button class="btn btn-main" data-act="go" data-v="shop">تصفّح المنتجات</button></div></div></main>';
@@ -401,7 +402,7 @@ function cartView(){
   '<label class="f">'+(comList()&&comList().length?'العنوان (الحي، رقم البيت)':'البلدية والعنوان')+'<input id="f-address" data-f="address" value="'+esc(form.address)+'"></label></div>'+
   '<div class="radios" role="radiogroup" aria-label="طريقة التوصيل"><label><input type="radio" name="dl" data-f="delivery" value="منزل"'+(form.delivery!=="مكتب"?" checked":"")+'> توصيل إلى المنزل</label><label><input type="radio" name="dl" data-f="delivery" value="مكتب"'+(form.delivery==="مكتب"?" checked":"")+'> استلام من مكتب التوصيل</label></div>'+
   '<label class="f">ملاحظات (اختياري)<textarea id="f-notes" data-f="notes" rows="2">'+esc(form.notes)+'</textarea></label></section>'+
-  '<section class="panel"><div id="shipbox">'+shipBox()+'</div><a id="send" class="btn btn-wa" target="_blank" rel="noopener" href="'+(ready?esc(waHref()):"#")+'" aria-disabled="'+(!ready)+'">أرسل الطلبية</a>'+
+  '<section class="panel"><div id="minbox">'+minBox()+'</div><div id="shipbox">'+shipBox()+'</div><a id="send" class="btn btn-wa" target="_blank" rel="noopener" href="'+(ready?esc(waHref()):"#")+'" aria-disabled="'+(!ready)+'">أرسل الطلبية</a>'+
   '<span class="muted small" id="sendhint">'+(!waPhone()?"رقم واتساب المتجر غير مضبوط بعد.":(ready?"تصلنا طلبيتك مباشرة، وسنتصل بك لتأكيدها.":"املأ الاسم والهاتف والولاية والبلدية والعنوان أولاً."))+'</span>'+
   '<details id="sendfail" hidden><summary class="small">لم تُرسل الطلبية؟ أرسلها عبر واتساب</summary><div style="display:grid;gap:10px;margin-top:10px"><div class="orderbox" id="otext">'+esc(orderText())+'</div><div class="row"><button class="btn btn-sm" data-act="copy">نسخ الطلبية</button><span class="small">رقم المتجر: <b dir="ltr">'+esc(data.shop.phone||"—")+'</b></span></div></div></details>'+
   '</section></main>';
@@ -482,7 +483,7 @@ function markDirty(){if(!S.dirty){S.dirty=true;render()}}
 /* ---------- events ---------- */
 app.addEventListener("click",function(e){
   var b=e.target.closest("[data-act]");
-  if(e.target.closest("#send")){e.preventDefault();if(!(formOk()&&waPhone())){toast(!waPhone()?"رقم واتساب المتجر غير مضبوط":(form.phone&&!dzOk(form.phone)?"رقم الهاتف غير صحيح: 10 أرقام يبدأ بـ 05 أو 06 أو 07":"أكمل معلومات التوصيل أولاً"));return}placeOrder();return}
+  if(e.target.closest("#send")){e.preventDefault();if(!(formOk()&&waPhone())){toast(!minOk()?"أقل كمية للطلب "+minQ()+" قطع، أضف "+(minQ()-cartPieces())+" قطع أخرى":!waPhone()?"رقم واتساب المتجر غير مضبوط":(form.phone&&!dzOk(form.phone)?"رقم الهاتف غير صحيح: 10 أرقام يبدأ بـ 05 أو 06 أو 07":"أكمل معلومات التوصيل أولاً"));return}placeOrder();return}
   if(!b)return;var act=b.dataset.act,id=b.dataset.id;
   var sel=id?(S.sel[id]=S.sel[id]||{qty:1,color:"",x:{}}):null;
   if(act==="go"){S.view=b.dataset.v;render();window.scrollTo(0,0);if(S.view==="cart"&&cartCount())nbTrack("InitiateCheckout",{value:cartTotal(),currency:"DZD",num_items:cartCount()})}
@@ -557,7 +558,7 @@ function shipBox(){var q=shipQ(),t=cartTotal();
   if(q.none)return '<div class="shipwarn">التوصيل غير متاح لهذه الولاية حالياً.</div>';
   if(q.nomode)return '<div class="shipwarn">'+(q.desk?"لا يوجد مكتب توصيل في هذه الولاية، اختر التوصيل إلى المنزل.":"التوصيل إلى المنزل غير متاح لهذه الولاية، اختر الاستلام من المكتب.")+'</div>';
   return '<div class="total ship"><span>التوصيل ('+(form.delivery==="مكتب"?"مكتب":"المنزل")+')</span><b>'+fmt(q.fee)+'</b></div><div class="total grand"><span>الإجمالي عند الاستلام</span><b>'+fmt(t+q.fee)+'</b></div><div class="shipinfo">ℹ️ هذا سعر شركة التوصيل لطرد واحد. إذا كانت طلبيتك كبيرة وتُرسل في <b>أكثر من طرد</b> أو كان <b>وزنها ثقيلاً</b>، قد يتغيّر سعر التوصيل، ونخبرك بالسعر النهائي بعد إكمال تغليف طلبيتك.</div><span class="muted small">الدفع عند الاستلام.</span>'}
-function updShip(){var b=document.getElementById("shipbox");if(b)b.innerHTML=shipBox()}
+function updShip(){var b=document.getElementById("shipbox");if(b)b.innerHTML=shipBox();var mb=document.getElementById("minbox");if(mb)mb.innerHTML=minBox()}
 function th(u){u=String(u||"");return /\/images\/[^\/]+\.jpg$/.test(u)?u.replace(/\/images\/([^\/]+)$/,"/images/t/$1"):u}
 var COM={};
 function comCo(){var sh=data.shop.shipping||{};return sh.def||((sh.companies||[])[0]||{}).id||""}
@@ -594,6 +595,11 @@ app.addEventListener("touchstart",function(e){var g=e.target.closest&&e.target.c
 app.addEventListener("touchend",function(e){if(!GT)return;var t=e.changedTouches&&e.changedTouches[0],o=GT;GT=null;if(!t)return;var dx=t.clientX-o.x,dy=t.clientY-o.y;if(Math.abs(dx)<40||Math.abs(dy)>Math.abs(dx))return;
   var g=o.g,n=g.children.length,w=g.clientWidth,max=(n-1)*w;if(n<2)return;
   if(dx>0&&o.sl<=2&&g.scrollLeft<=2)galGo(g.dataset.gal,n-1,true);else if(dx<0&&o.sl>=max-2&&g.scrollLeft>=max-2)galGo(g.dataset.gal,0,true)},{passive:true,capture:true});
+function ctnLine(p){var c=ctnOf(p);if(!c)return "";var u=Math.round(c.price/c.qty);return '<div class="ctnl">📦 بالكرطون ('+c.qty+' قطعة): القطعة بـ <b>'+fmt(u)+'</b></div>'}
+function minQ(){var m=parseInt(data.shop.minQty,10);return isNaN(m)?10:Math.max(0,m)}
+function cartPieces(){return cartLines().reduce(function(s,x){var c=x.l.ct&&ctnOf(x.p);return s+(c?c.qty:1)*x.l.qty},0)}
+function minOk(){return cartPieces()>=minQ()}
+function minBox(){var n=cartPieces(),m=minQ();if(!m||n>=m)return "";return '<div class="minbox">⚠️ أقل كمية للطلب <b>'+m+' قطع</b> (من منتجات مختلفة). في سلتك <b>'+n+'</b>، أضف <b>'+(m-n)+'</b> قطع أخرى.</div>'}
 function selectText(){var o=document.getElementById("otext");if(!o)return;var r=document.createRange();r.selectNodeContents(o);var s=getSelection();s.removeAllRanges();s.addRange(r);toast("حدّد النص وانسخه")}
 app.addEventListener("input",function(e){if(e.target.dataset&&e.target.dataset.pnote){PN[e.target.dataset.pnote]=e.target.value.slice(0,200);return}if(e.target.dataset&&e.target.dataset.lnote!=null){var ln=cart[+e.target.dataset.lnote];if(ln){ln.note=e.target.value.slice(0,200);saveCart()}return}
   var t=e.target;
