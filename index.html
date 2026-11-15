@@ -251,7 +251,7 @@ function fmt(n){n=Math.round(Number(n)||0);return String(n)+" دج"}
 function splitColors(s){return String(s||"").split(/[،,]/).map(function(x){return x.trim()}).filter(Boolean)}
 function hex(name){var k=Object.keys(COLORS).find(function(c){return name.indexOf(c)===0});return k?COLORS[k]:"transparent"}
 function byId(id){return data.products.find(function(p){return p.id===id})}
-function sorted(list){return list.slice().sort(function(a,b){return S.sort==="asc"?(a.price-b.price):(b.price-a.price)})}
+function sorted(list){function o(p){var n=parseInt(p.order,10);return n>0?n:null}return list.slice().sort(function(a,b){var x=o(a),y=o(b);if(x!=null&&y!=null&&x!==y)return x-y;if(x!=null&&y==null)return -1;if(x==null&&y!=null)return 1;return S.sort==="asc"?(a.price-b.price):(b.price-a.price)})}
 function uid(){return "p"+Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
 function exampleSvg(col,ref,price){
   var petals="";for(var i=0;i<8;i++){var a=i*45;petals+='<ellipse cx="160" cy="118" rx="26" ry="52" fill="'+col+'" stroke="#00000022" transform="rotate('+a+' 160 170)"/>'}
