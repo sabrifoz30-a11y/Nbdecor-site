@@ -372,7 +372,7 @@ function orderText(){
 }
 function waPhone(){var d=String(data.shop.phone||"").replace(/\D/g,"");if(d.indexOf("00")===0)d=d.slice(2);if(d.charAt(0)==="0")d="213"+d.slice(1);return d}
 function waHref(){return "https://wa.me/"+waPhone()+"?text="+encodeURIComponent(orderText())}
-function formOk(){return form.name.trim()&&form.phone.replace(/\D/g,"").length>=9&&form.wilaya&&form.address.trim()}
+function formOk(){return comOk()&&form.name.trim()&&form.phone.replace(/\D/g,"").length>=9&&form.wilaya&&form.address.trim()}
 function cartView(){
   var lines=cartLines();
   if(!lines.length)return '<main class="wrap page"><h1>سلتك</h1><div class="panel empty">السلة فارغة. اختر منتجاتك من المتجر ثم ارجع هنا.<div><button class="btn btn-main" data-act="go" data-v="shop">تصفّح المنتجات</button></div></div></main>';
@@ -384,12 +384,12 @@ function cartView(){
   '<section class="panel"><h2>معلومات التوصيل</h2><div class="fields">'+
   '<label class="f">الاسم الكامل<input id="f-name" data-f="name" value="'+esc(form.name)+'" autocomplete="name"></label>'+
   '<label class="f">رقم الهاتف<input id="f-phone" data-f="phone" type="tel" inputmode="tel" dir="ltr" placeholder="05xx xx xx xx" value="'+esc(form.phone)+'" autocomplete="tel"></label>'+
-  '<label class="f">الولاية<select id="f-wilaya" data-f="wilaya">'+opts+'</select></label>'+
-  '<label class="f">البلدية والعنوان<input id="f-address" data-f="address" value="'+esc(form.address)+'"></label></div>'+
+  '<label class="f">الولاية<select id="f-wilaya" data-f="wilaya">'+opts+'</select></label>'+'<div id="combox">'+comBox()+'</div>'+
+  '<label class="f">'+(comList()&&comList().length?'العنوان (الحي، رقم البيت)':'البلدية والعنوان')+'<input id="f-address" data-f="address" value="'+esc(form.address)+'"></label></div>'+
   '<div class="radios" role="radiogroup" aria-label="طريقة التوصيل"><label><input type="radio" name="dl" data-f="delivery" value="منزل"'+(form.delivery!=="مكتب"?" checked":"")+'> توصيل إلى المنزل</label><label><input type="radio" name="dl" data-f="delivery" value="مكتب"'+(form.delivery==="مكتب"?" checked":"")+'> استلام من مكتب التوصيل</label></div>'+
   '<label class="f">ملاحظات (اختياري)<textarea id="f-notes" data-f="notes" rows="2">'+esc(form.notes)+'</textarea></label></section>'+
   '<section class="panel"><div id="shipbox">'+shipBox()+'</div><a id="send" class="btn btn-wa" target="_blank" rel="noopener" href="'+(ready?esc(waHref()):"#")+'" aria-disabled="'+(!ready)+'">أرسل الطلبية</a>'+
-  '<span class="muted small" id="sendhint">'+(!waPhone()?"رقم واتساب المتجر غير مضبوط بعد.":(ready?"تصلنا طلبيتك مباشرة، وسنتصل بك لتأكيدها.":"املأ الاسم والهاتف والولاية والعنوان أولاً."))+'</span>'+
+  '<span class="muted small" id="sendhint">'+(!waPhone()?"رقم واتساب المتجر غير مضبوط بعد.":(ready?"تصلنا طلبيتك مباشرة، وسنتصل بك لتأكيدها.":"املأ الاسم والهاتف والولاية والبلدية والعنوان أولاً."))+'</span>'+
   '<details id="sendfail" hidden><summary class="small">لم تُرسل الطلبية؟ أرسلها عبر واتساب</summary><div style="display:grid;gap:10px;margin-top:10px"><div class="orderbox" id="otext">'+esc(orderText())+'</div><div class="row"><button class="btn btn-sm" data-act="copy">نسخ الطلبية</button><span class="small">رقم المتجر: <b dir="ltr">'+esc(data.shop.phone||"—")+'</b></span></div></div></details>'+
   '</section></main>';
 }
@@ -459,7 +459,7 @@ function refreshGrid(){var g=document.getElementById("grid");if(g)g.innerHTML=gr
 function refreshSend(){
   var a=document.getElementById("send");if(!a)return;var ready=formOk()&&waPhone();
   a.href=ready?waHref():"#";a.setAttribute("aria-disabled",String(!ready));
-  var h=document.getElementById("sendhint");if(h)h.textContent=!waPhone()?"رقم واتساب المتجر غير مضبوط بعد.":(ready?"تصلنا طلبيتك مباشرة، وسنتصل بك لتأكيدها.":"املأ الاسم والهاتف والولاية والعنوان أولاً.");
+  var h=document.getElementById("sendhint");if(h)h.textContent=!waPhone()?"رقم واتساب المتجر غير مضبوط بعد.":(ready?"تصلنا طلبيتك مباشرة، وسنتصل بك لتأكيدها.":"املأ الاسم والهاتف والولاية والبلدية والعنوان أولاً.");
   var o=document.getElementById("otext");if(o)o.textContent=orderText();
   var t=document.getElementById("tot");if(t)t.textContent=fmt(cartTotal());updShip();
   var c=document.getElementById("cc");if(c)c.textContent=cartCount();
@@ -519,7 +519,7 @@ async function placeOrder(){
   if(placing)return;var sq=shipQ();if(sq&&(sq.none||sq.nomode)){toast(sq.none?"التوصيل غير متاح لهذه الولاية حالياً":"اختر طريقة توصيل متاحة لولايتك");return}placing=true;var a=document.getElementById("send");if(a){a.setAttribute("aria-disabled","true");a.textContent="جارٍ إرسال الطلبية…"}
   var items=cartLines().map(function(x){return{id:x.p.id,ref:x.p.ref,name:x.p.name||undefined,img:img(x.p,x.l.color),variant:lineParts(x.p,x.l),color:x.l.color||"",x:x.l.x||{},qty:x.l.qty,price:linePrice(x.p,x.l),carton:x.l.ct&&ctnOf(x.p)?ctnOf(x.p).qty:undefined}});
   var w=form.wilaya?(form.wilaya+" - "+WILAYAS[form.wilaya-1]):"";
-  var customer={name:form.name.trim(),phone:form.phone.trim(),wilaya:w,wilaya_no:String(form.wilaya),address:form.address.trim(),delivery:form.delivery,notes:form.notes||""};
+  var customer={name:form.name.trim(),phone:form.phone.trim(),wilaya:w,wilaya_no:String(form.wilaya),commune:form.commune||"",address:form.address.trim(),delivery:form.delivery,notes:form.notes||""};
   try{var r=await fetch(SB_URL+"/rest/v1/rpc/place_order",{method:"POST",headers:{"apikey":SB_KEY,"Authorization":"Bearer "+SB_KEY,"Content-Type":"application/json"},body:JSON.stringify({customer:customer,items:items,store:STORE})});
     if(!r.ok)throw new Error(await r.text());var no=await r.json();
     var q=shipQ();S.lastOrder={no:no,name:customer.name,phone:customer.phone,wilaya:w,total:cartTotal(),fee:q&&q.fee!=null?q.fee:null,delivery:form.delivery,items:items};
@@ -544,6 +544,18 @@ function shipBox(){var q=shipQ(),t=cartTotal();
   return '<div class="total ship"><span>التوصيل ('+(form.delivery==="مكتب"?"مكتب":"المنزل")+')</span><b>'+fmt(q.fee)+'</b></div><div class="total grand"><span>الإجمالي عند الاستلام</span><b>'+fmt(t+q.fee)+'</b></div><div class="shipinfo">ℹ️ هذا سعر شركة التوصيل لطرد واحد. إذا كانت طلبيتك كبيرة وتُرسل في <b>أكثر من طرد</b> أو كان <b>وزنها ثقيلاً</b>، قد يتغيّر سعر التوصيل، ونخبرك بالسعر النهائي بعد إكمال تغليف طلبيتك.</div><span class="muted small">الدفع عند الاستلام.</span>'}
 function updShip(){var b=document.getElementById("shipbox");if(b)b.innerHTML=shipBox()}
 function th(u){u=String(u||"");return /\/images\/[^\/]+\.jpg$/.test(u)?u.replace(/\/images\/([^\/]+)$/,"/images/t/$1"):u}
+var COM={};
+function comCo(){var sh=data.shop.shipping||{};return sh.def||((sh.companies||[])[0]||{}).id||""}
+function comList(){var k=comCo()+"|"+form.wilaya;return form.wilaya?COM[k]:null}
+function comOk(){var l=comList();if(!Array.isArray(l)||!l.length)return true;if(!form.commune)return false;return l.some(function(c){return c.name===form.commune&&(form.delivery!=="مكتب"||c.desk)})}
+async function loadCom(){var co=comCo(),w=form.wilaya;if(!co||!w){reCom();return}var k=co+"|"+w;if(COM[k]===undefined){COM[k]="…";reCom();
+    try{var r=await fetch(SB_URL+"/rest/v1/communes?select=name,desk&store_id=eq."+STORE+"&company_id=eq."+encodeURIComponent(co)+"&wilaya=eq."+(+w)+"&order=name",{headers:{"apikey":SB_KEY,"Authorization":"Bearer "+SB_KEY}});COM[k]=r.ok?await r.json():[]}catch(e){COM[k]=[]}}
+  if(form.commune&&Array.isArray(COM[k])&&!COM[k].some(function(c){return c.name===form.commune&&(form.delivery!=="مكتب"||c.desk)})){form.commune="";store("form",form)}reCom();refreshSend()}
+function reCom(){var b=document.getElementById("combox");if(b)b.innerHTML=comBox();var a=document.getElementById("f-address");if(a&&a.previousSibling&&a.previousSibling.nodeType===3){var l=comList();a.previousSibling.nodeValue=l&&l.length?"العنوان (الحي، رقم البيت)":"البلدية والعنوان"}}
+function comBox(){var k=comCo()+"|"+form.wilaya,l=COM[k];if(!form.wilaya)return "";if(l===undefined){setTimeout(loadCom,0);return '<span class="muted small">جارٍ تحميل البلديات…</span>'}if(l==="…")return '<span class="muted small">جارٍ تحميل البلديات…</span>';if(!l.length)return "";
+  var desk=form.delivery==="مكتب",opts=desk?l.filter(function(c){return c.desk}):l;
+  if(desk&&!opts.length)return '<div class="shipwarn">لا يوجد مكتب توصيل في هذه الولاية، اختر التوصيل إلى المنزل.</div>';
+  return '<label class="f">'+(desk?'مكتب التوصيل (البلدية)':'البلدية')+'<select id="f-commune" data-f="commune"><option value="">'+(desk?'اختر المكتب الأقرب لك':'اختر البلدية')+'</option>'+opts.map(function(c){return '<option'+(form.commune===c.name?' selected':'')+'>'+esc(c.name)+'</option>'}).join("")+'</select></label>'+(desk?'<span class="muted small">يظهر هنا فقط البلديات التي فيها مكتب لشركة التوصيل.</span>':'')}
 function selectText(){var o=document.getElementById("otext");if(!o)return;var r=document.createRange();r.selectNodeContents(o);var s=getSelection();s.removeAllRanges();s.addRange(r);toast("حدّد النص وانسخه")}
 app.addEventListener("input",function(e){
   var t=e.target;
@@ -551,7 +563,7 @@ app.addEventListener("input",function(e){
   else if(t.dataset.mq){var sq=S.sel[t.dataset.mq]=S.sel[t.dataset.mq]||{m:{}};sq.m=sq.m||{};sq.m[t.dataset.c]=Math.max(0,parseInt(t.value,10)||0);mqSync(t.dataset.mq)}
   else if(t.dataset.qty){var s=S.sel[t.dataset.qty]=S.sel[t.dataset.qty]||{qty:1,color:""};s.qty=Math.max(1,parseInt(t.value,10)||1)}
   else if(t.dataset.line){var v=parseInt(t.value,10);if(v>0){cartLines()[t.dataset.line].l.qty=v;saveCart();refreshSend()}}
-  else if(t.dataset.f){form[t.dataset.f]=t.value;store("form",form);refreshSend();updShip()}
+  else if(t.dataset.f){form[t.dataset.f]=t.value;if(t.dataset.f==="wilaya")form.commune="";store("form",form);refreshSend();updShip();if(t.dataset.f==="wilaya"||t.dataset.f==="delivery")loadCom()}
   else if(t.id==="newcat"){S.newCat=t.value}
   else if(t.dataset.catname){var ci=+t.dataset.catname,ov=data.shop.cats[ci],nv=t.value;data.shop.cats[ci]=nv;data.products.forEach(function(p){if(p.cat===ov)p.cat=nv});if(S.upCat===ov)S.upCat=nv;S.dirty=true;var sb2=document.querySelector(".savebar");if(!sb2)render()}
   else if(t.dataset.upcat){S.upCat=t.value}
