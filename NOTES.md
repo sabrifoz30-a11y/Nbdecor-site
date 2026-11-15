@@ -34,3 +34,8 @@ On every staff.html change bump both `APPV` in staff.html and `version.txt` to t
 ## Domain
 - Shop: https://styledecordz.store/ (CNAME file in repo; DNS at Spaceship: 4 A records to GitHub Pages + CNAME www -> sabrifoz30-a11y.github.io).
 - Product image URLs now point to https://styledecordz.store/images/ ; settings.shopUrl used by Meta/TikTok server events.
+
+## Communes
+- `communes` (per store + delivery company) synced from the carrier (Ecotrack: /api/v1/get/communes returns all ~1542 with has_stop_desk).
+- Arabic names: `commune_names` loaded from the open npm dataset @dzcode-io/leblad (matched by postal code, else by name) + 10 manual fixes; a trigger fills `communes.name_ar` on every sync.
+- Orders store `customer.commune` (Latin, as the carrier expects) and `customer.commune_ar`.
