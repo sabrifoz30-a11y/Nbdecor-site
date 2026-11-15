@@ -170,6 +170,7 @@ label.f{display:grid;gap:5px;font-size:13.5px;font-weight:500;min-width:0}
 .new{font-size:11px;background:var(--leaf);color:var(--leaf-ink);border-radius:6px;padding:1px 7px}
 @media (prefers-reduced-motion:no-preference){.card{transition:border-color .15s}.card:hover{border-color:var(--leaf)}}
 
+.gslide{flex:0 0 100%;width:100%;height:100%;position:relative;scroll-snap-align:start}.gslide img{width:100%;height:100%;object-fit:contain;display:block}.glab{position:absolute;top:10px;left:50%;transform:translateX(-50%);white-space:nowrap;background:rgba(31,74,58,.9);color:#fff;font-weight:700;font-size:15px;border-radius:999px;padding:5px 12px;pointer-events:none}
 .pnote{width:100%;box-sizing:border-box;margin-top:8px;padding:10px;border:1px dashed var(--line);border-radius:10px;background:#fffdf8;font:inherit}
 .lnote{width:100%;box-sizing:border-box;margin-top:6px;padding:9px 10px;border:1px dashed var(--line);border-radius:10px;background:#fffdf8;font:inherit}
 .trust{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 12px;font-size:13.5px;font-weight:600;color:#245c46;background:#e8f3ec;border-radius:12px;padding:8px 10px;margin:12px auto 0;max-width:560px}
@@ -280,11 +281,11 @@ function options(p){
 function gallery(p,start){
   var ims=p.imgs&&p.imgs.length?p.imgs:[{u:p.img,c:""}];
   if(ims.length<2)return '<div class="ph"><img loading="lazy" decoding="async" src="'+esc(src1(p,ims[0].u))+'" alt="منتج '+esc(p.ref)+'">'+(p.example?'<span class="tag">مثال</span>':'')+'</div>';
-  return '<div class="ph"><div class="gal" dir="ltr" data-gal="'+p.id+'" data-start="'+(start||0)+'">'+ims.map(function(m,i){return '<img loading="lazy" decoding="async" src="'+esc(src1(p,m.u))+'" alt="منتج '+esc(p.ref)+(m.c?' باللون '+esc(m.c):'')+'">'}).join("")+'</div>'+
+  return '<div class="ph"><div class="gal" dir="ltr" data-gal="'+p.id+'" data-start="'+(start||0)+'">'+ims.map(function(m,i){var lb=galLabel(p,m,i);return '<div class="gslide"><img loading="lazy" decoding="async" src="'+esc(src1(p,m.u))+'" alt="منتج '+esc(p.ref)+(m.c?' '+esc(m.c):'')+'">'+(lb?'<span class="glab">'+esc(lb)+'</span>':'')+'</div>'}).join("")+'</div>'+
   '<button class="gnav gprev" data-act="gal" data-id="'+p.id+'" data-d="-1" aria-label="الصورة السابقة">‹</button><button class="gnav gnext" data-act="gal" data-id="'+p.id+'" data-d="1" aria-label="الصورة التالية">›</button>'+
   '<div class="dots" data-dots="'+p.id+'">'+ims.map(function(m,i){return '<i'+(i===(start||0)?' class="on"':'')+'></i>'}).join("")+'</div><span class="tag">'+ims.length+' صور</span></div>';
 }
-function galGo(id,i,smooth){var g=document.querySelector('[data-gal="'+id+'"]');if(!g)return;var n=g.children.length;i=Math.max(0,Math.min(n-1,i));g.scrollTo({left:i*g.clientWidth,behavior:smooth?"smooth":"auto"});galDots(g,i)}
+function galGo(id,i,smooth){var g=document.querySelector('[data-gal="'+id+'"]');if(!g)return;var n=g.children.length;if(i<0)i=n-1;else if(i>n-1)i=0;g.scrollTo({left:i*g.clientWidth,behavior:smooth?"smooth":"auto"});galDots(g,i)}
 function galDots(g,i){var d=document.querySelector('[data-dots="'+g.dataset.gal+'"]');if(!d)return;Array.prototype.forEach.call(d.children,function(x,k){x.className=k===i?"on":""})}
 function galInit(){document.querySelectorAll("[data-gal]").forEach(function(g){var s=+g.dataset.start||0;if(s)g.scrollLeft=s*g.clientWidth})}
 function cartCount(){return cart.reduce(function(s,l){return s+l.qty},0)}
@@ -587,6 +588,12 @@ var PN={};
 function pnote(id){return String(PN[id]||"").trim()}
 function pnoteClear(id){delete PN[id];var el=document.querySelector('[data-pnote="'+id+'"]');if(el)el.value=""}
 function pnoteInput(id){return '<input class="pnote" data-pnote="'+id+'" maxlength="200" placeholder="✏️ ملاحظة على هذا المنتج (اختياري)" value="'+esc(PN[id]||"")+'">'}
+function galLabel(p,m,i){if(p.novar)return "";var c=String(m.c||"").trim();if(isModel(p))return optLabel(p,c||String(i+1));return c?c:""}
+var GT=null;
+app.addEventListener("touchstart",function(e){var g=e.target.closest&&e.target.closest("[data-gal]");if(!g||!e.touches[0])return;GT={g:g,x:e.touches[0].clientX,y:e.touches[0].clientY,sl:g.scrollLeft}},{passive:true,capture:true});
+app.addEventListener("touchend",function(e){if(!GT)return;var t=e.changedTouches&&e.changedTouches[0],o=GT;GT=null;if(!t)return;var dx=t.clientX-o.x,dy=t.clientY-o.y;if(Math.abs(dx)<40||Math.abs(dy)>Math.abs(dx))return;
+  var g=o.g,n=g.children.length,w=g.clientWidth,max=(n-1)*w;if(n<2)return;
+  if(dx>0&&o.sl<=2&&g.scrollLeft<=2)galGo(g.dataset.gal,n-1,true);else if(dx<0&&o.sl>=max-2&&g.scrollLeft>=max-2)galGo(g.dataset.gal,0,true)},{passive:true,capture:true});
 function selectText(){var o=document.getElementById("otext");if(!o)return;var r=document.createRange();r.selectNodeContents(o);var s=getSelection();s.removeAllRanges();s.addRange(r);toast("حدّد النص وانسخه")}
 app.addEventListener("input",function(e){if(e.target.dataset&&e.target.dataset.pnote){PN[e.target.dataset.pnote]=e.target.value.slice(0,200);return}if(e.target.dataset&&e.target.dataset.lnote!=null){var ln=cart[+e.target.dataset.lnote];if(ln){ln.note=e.target.value.slice(0,200);saveCart()}return}
   var t=e.target;
