@@ -19,7 +19,7 @@ begin
   base := rtrim(coalesce(comp->>'base',''),'/');
   if base !~ '^https://[a-z0-9.-]+$' then raise exception 'bad base url'; end if;
   cu := o.customer;
-  ph := regexp_replace(coalesce(cu->>'phone',''),'\D','','g'); if left(ph,3) = '213' then ph := '0'||substr(ph,4); end if; if length(ph) = 9 then ph := '0'||ph; end if;
+  ph := public.dz_phone(cu->>'phone'); if ph is null then raise exception 'bad phone'; end if;
   w := coalesce(nullif(cu->>'wilaya_no','')::int, nullif(split_part(coalesce(cu->>'wilaya',''),' ',1),'')::int);
   if coalesce(cu->>'commune','') = '' then raise exception 'no commune'; end if;
   rem := left(concat_ws(' · ', o.parcel_count||' طرد', case when o.weight_kg is not null then o.weight_kg||' كغ' end, nullif(trim(coalesce(cu->>'notes','')),'')), 255);

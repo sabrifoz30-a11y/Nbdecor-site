@@ -372,7 +372,7 @@ function orderText(){
 }
 function waPhone(){var d=String(data.shop.phone||"").replace(/\D/g,"");if(d.indexOf("00")===0)d=d.slice(2);if(d.charAt(0)==="0")d="213"+d.slice(1);return d}
 function waHref(){return "https://wa.me/"+waPhone()+"?text="+encodeURIComponent(orderText())}
-function formOk(){return comOk()&&form.name.trim()&&form.phone.replace(/\D/g,"").length>=9&&form.wilaya&&form.address.trim()}
+function formOk(){return comOk()&&form.name.trim()&&dzOk(form.phone)&&form.wilaya&&form.address.trim()}
 function cartView(){
   var lines=cartLines();
   if(!lines.length)return '<main class="wrap page"><h1>سلتك</h1><div class="panel empty">السلة فارغة. اختر منتجاتك من المتجر ثم ارجع هنا.<div><button class="btn btn-main" data-act="go" data-v="shop">تصفّح المنتجات</button></div></div></main>';
@@ -469,7 +469,7 @@ function markDirty(){if(!S.dirty){S.dirty=true;render()}}
 /* ---------- events ---------- */
 app.addEventListener("click",function(e){
   var b=e.target.closest("[data-act]");
-  if(e.target.closest("#send")){e.preventDefault();if(!(formOk()&&waPhone())){toast(waPhone()?"أكمل معلومات التوصيل أولاً":"رقم واتساب المتجر غير مضبوط");return}placeOrder();return}
+  if(e.target.closest("#send")){e.preventDefault();if(!(formOk()&&waPhone())){toast(!waPhone()?"رقم واتساب المتجر غير مضبوط":(form.phone&&!dzOk(form.phone)?"رقم الهاتف غير صحيح: 10 أرقام يبدأ بـ 05 أو 06 أو 07":"أكمل معلومات التوصيل أولاً"));return}placeOrder();return}
   if(!b)return;var act=b.dataset.act,id=b.dataset.id;
   var sel=id?(S.sel[id]=S.sel[id]||{qty:1,color:"",x:{}}):null;
   if(act==="go"){S.view=b.dataset.v;render();window.scrollTo(0,0);if(S.view==="cart"&&cartCount())nbTrack("InitiateCheckout",{value:cartTotal(),currency:"DZD",num_items:cartCount()})}
@@ -557,6 +557,8 @@ function comBox(){var k=comCo()+"|"+form.wilaya,l=COM[k];if(!form.wilaya)return 
   var desk=form.delivery==="مكتب",opts=desk?l.filter(function(c){return c.desk}):l;
   if(desk&&!opts.length)return '<div class="shipwarn">لا يوجد مكتب توصيل في هذه الولاية، اختر التوصيل إلى المنزل.</div>';
   return '<label class="f">'+(desk?'مكتب التوصيل (البلدية)':'البلدية')+'<select id="f-commune" data-f="commune"><option value="">'+(desk?'اختر المكتب الأقرب لك':'اختر البلدية')+'</option>'+opts.map(function(c){return '<option value="'+esc(c.name)+'"'+(form.commune===c.name?' selected':'')+'>'+esc(c.name_ar||c.name)+'</option>'}).join("")+'</select></label>'+(desk?'<span class="muted small">يظهر هنا فقط البلديات التي فيها مكتب لشركة التوصيل.</span>':'')}
+function dzPhone(p){var d=String(p||"").replace(/\D/g,"");if(d.indexOf("00213")===0)d=d.slice(5);else if(d.indexOf("213")===0)d=d.slice(3);if(d.charAt(0)!=="0")d="0"+d;return /^0[567]\d{8}$/.test(d)||/^0[2-4]\d{7}$/.test(d)?d:""}
+function dzOk(p){return !!dzPhone(p)}
 function selectText(){var o=document.getElementById("otext");if(!o)return;var r=document.createRange();r.selectNodeContents(o);var s=getSelection();s.removeAllRanges();s.addRange(r);toast("حدّد النص وانسخه")}
 app.addEventListener("input",function(e){
   var t=e.target;
