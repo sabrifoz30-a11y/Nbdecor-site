@@ -1,10 +1,51 @@
 -- One carrier shipment per parcel: each parcel gets its own reference (#ID-1/3), its own weight (field "weight", kg rounded up),
--- the customer info and the products. The cash-on-delivery amount goes on parcel 1 only.
-alter table public.orders add column if not exists carrier_parcels jsonb;
+-- the customer info and its own products (chosen by the packer). Each parcel's cash-on-delivery amount =
+-- the value of its products + one delivery fee (the carrier charges per parcel).
+alter table public.orders add column if not exists carrier_parcels jsonb, add column if not exists parcel_items jsonb;
+
+-- pi: one array per parcel of {k: item index, q: quantity}; required when n > 1, every item fully assigned.
+drop function if exists public.pack_order(bigint, int, numeric, jsonb);
+create or replace function public.pack_order(oid bigint, n int, kg numeric default null, kgs jsonb default null, pi jsonb default null) returns jsonb language plpgsql security definer set search_path = public as $$
+declare o public.orders; nm text; w jsonb; tot numeric; bad int;
+begin
+  if public.my_role() not in ('packer','owner') then raise exception 'not allowed'; end if;
+  if n is null or n < 1 or n > 50 then raise exception 'bad parcels'; end if;
+  select * into o from public.orders where id = oid and store_id = public.my_store() for update;
+  if not found then raise exception 'no order'; end if;
+  if o.status <> 'ready' then raise exception 'not ready'; end if;
+  if exists (select 1 from jsonb_array_elements(coalesce(o.carrier_parcels,'[]'::jsonb)) x where x ? 'tracking') then raise exception 'already at carrier'; end if;
+  if kgs is not null and jsonb_typeof(kgs) = 'array' then
+    select jsonb_agg(case when (x #>> '{}') ~ '^[0-9]+(\.[0-9]+)?$' and (x #>> '{}')::numeric > 0 then to_jsonb(round((x #>> '{}')::numeric, 2)) else 'null'::jsonb end order by i)
+      into w from jsonb_array_elements(kgs) with ordinality t(x, i) where i <= n;
+    select sum((x #>> '{}')::numeric) into tot from jsonb_array_elements(w) x where jsonb_typeof(x) = 'number';
+  end if;
+  if n > 1 then
+    if pi is null or jsonb_typeof(pi) <> 'array' or jsonb_array_length(pi) <> n then raise exception 'parcel items required'; end if;
+    -- clean: keep only {k,q} with valid index and positive integer qty
+    select jsonb_agg(coalesce((select jsonb_agg(jsonb_build_object('k', (e->>'k')::int, 'q', (e->>'q')::int))
+              from jsonb_array_elements(p) e where (e->>'k') ~ '^[0-9]+$' and (e->>'q') ~ '^[0-9]+$' and (e->>'q')::int > 0
+                and (e->>'k')::int < jsonb_array_length(o.items)), '[]'::jsonb) order by i)
+      into pi from jsonb_array_elements(pi) with ordinality t(p, i);
+    select count(*) into bad from jsonb_array_elements(o.items) with ordinality t(it, k)
+      where coalesce((it->>'qty')::int,0) <> coalesce((select sum((e->>'q')::int) from jsonb_array_elements(pi) p, jsonb_array_elements(p) e where (e->>'k')::int = k-1),0);
+    if bad > 0 then raise exception 'parcel items mismatch'; end if;
+    if exists (select 1 from jsonb_array_elements(pi) p where jsonb_array_length(p) = 0) then raise exception 'empty parcel'; end if;
+  else pi := null;
+  end if;
+  select name into nm from public.profiles where id = auth.uid();
+  update public.orders set parcel_count = n, parcel_weights = w, parcel_items = pi, carrier_parcels = null,
+    weight_kg = coalesce(tot, case when kg is null or kg <= 0 then null else kg end),
+    packed_at = now(), packed_by = auth.uid(), updated_at = now(),
+    history = history || jsonb_build_array(jsonb_build_object('at', now(), 'what', 'packed', 'by', nm, 'parcels', n, 'kg', coalesce(tot, kg), 'kgs', w))
+  where id = oid returning * into o;
+  return to_jsonb(o);
+end $$;
+revoke all on function public.pack_order(bigint, int, numeric, jsonb, jsonb) from public, anon;
+grant execute on function public.pack_order(bigint, int, numeric, jsonb, jsonb) to authenticated;
 
 create or replace function public.carrier_ship(oid bigint) returns bigint language plpgsql security definer set search_path = public as $$
 declare st text := public.my_store(); o public.orders; sh jsonb; comp jsonb; tok text; base text; cu jsonb; ph text; w int; body jsonb; rid bigint;
-  prod text; n int; i int; kg numeric; cp jsonb; it jsonb; last bigint;
+  prod text; amt numeric; n int; i int; kg numeric; cp jsonb; it jsonb; last bigint;
 begin
   if public.my_role() not in ('packer','owner') then raise exception 'not allowed'; end if;
   select * into o from public.orders where id = oid and store_id = st for update;
@@ -34,19 +75,28 @@ begin
   cp := coalesce(o.carrier_parcels, '[]'::jsonb);
   if jsonb_array_length(cp) <> n and exists (select 1 from jsonb_array_elements(cp) x where x ? 'tracking') then raise exception 'repacked after partial ship'; end if;
   if jsonb_array_length(cp) <> n then cp := '[]'::jsonb; for i in 1..n loop cp := cp || jsonb_build_array(jsonb_build_object('i', i)); end loop; end if;
-  prod := (select string_agg(coalesce(x->>'ref','')||' x'||coalesce(x->>'qty','1'), ', ') from jsonb_array_elements(o.items) x);
+  if n > 1 and (o.parcel_items is null or jsonb_array_length(o.parcel_items) <> n) then raise exception 'parcel items required'; end if;
   for i in 1..n loop
     it := cp->(i-1);
     if it ? 'tracking' then continue; end if;
     kg := case when o.parcel_weights is not null and jsonb_typeof(o.parcel_weights->(i-1)) = 'number' then (o.parcel_weights->>(i-1))::numeric else o.weight_kg end;
+    if n = 1 then
+      prod := (select string_agg(coalesce(x->>'ref','')||' x'||coalesce(x->>'qty','1')||case when x ? 'carton' then ' كرطون' else '' end, ', ') from jsonb_array_elements(o.items) x);
+      amt := coalesce(o.total,0) + coalesce(o.shipping,0);
+    else
+      select string_agg(coalesce(o.items->((e->>'k')::int)->>'ref','')||' x'||(e->>'q')||case when o.items->((e->>'k')::int) ? 'carton' then ' كرطون' else '' end, ', '),
+             coalesce(sum(coalesce((o.items->((e->>'k')::int)->>'price')::numeric,0) * (e->>'q')::int),0)
+        into prod, amt from jsonb_array_elements(o.parcel_items->(i-1)) e;
+      amt := amt + coalesce(o.shipping,0);
+    end if;
     body := jsonb_strip_nulls(jsonb_build_object(
       'reference', case when n = 1 then '#'||o.id else '#'||o.id||'-'||i||'/'||n end,
       'nom_client', left(coalesce(cu->>'name',''),255), 'telephone', ph,
       'adresse', left(coalesce(nullif(trim(cu->>'address'),''), cu->>'commune'),255), 'commune', cu->>'commune', 'code_wilaya', w,
-      'montant', case when i = 1 then coalesce(o.total,0) + coalesce(o.shipping,0) else 0 end,
+      'montant', amt,
       'weight', ceil(kg)::int,
       'remarque', left(concat_ws(' · ', case when n > 1 then 'طرد '||i||' من '||n end, 'الوزن '||kg||' كغ',
-                   case when n > 1 and i > 1 then 'المبلغ كله مع الطرد 1' end, nullif(trim(coalesce(cu->>'notes','')),'')), 255),
+nullif(trim(coalesce(cu->>'notes','')),'')), 255),
       'produit', left(case when n > 1 then '(طرد '||i||'/'||n||') ' else '' end || coalesce(prod,''), 255),
       'type', 1, 'stop_desk', case when cu->>'delivery' = 'مكتب' then 1 else 0 end, 'stock', 0));
     select net.http_post(url := base||'/api/v1/create/order', body := body,
