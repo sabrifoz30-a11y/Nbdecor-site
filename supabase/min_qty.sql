@@ -1,0 +1,9 @@
+-- PENDING (not applied yet: the Supabase access token expired).
+-- Minimum order quantity on the server: settings.minQty (default 10 pieces); a carton line counts qty * carton pieces.
+-- Apply by adding these lines to public.place_order(customer, items, store), right before `sf := public.ship_fee(customer, store);`
+-- and declaring `pcs int := 0; mq int;`:
+--
+--   select coalesce(nullif(data->>'minQty','')::int, 10) into mq from public.settings where store_id = store;
+--   select coalesce(sum(greatest(1, coalesce((i->>'qty')::int,1)) * greatest(1, coalesce((i->>'carton')::int,1))),0)
+--     into pcs from jsonb_array_elements(items) i;
+--   if pcs < coalesce(mq,10) then raise exception 'min quantity'; end if;
