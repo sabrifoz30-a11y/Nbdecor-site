@@ -181,6 +181,7 @@ label.f{display:grid;gap:5px;font-size:13.5px;font-weight:500;min-width:0}
 .mqt .stp{display:grid;grid-template-columns:30px minmax(0,1fr) 30px;width:100%;min-width:0;max-width:100%;box-sizing:border-box}
 .mqt .stp button{width:30px;min-width:0;min-height:34px;padding:0}.mqt .stp input{width:100%;min-width:0;padding:0;text-align:center}
 .helpfab{width:46px;height:46px;padding:0!important;justify-content:center;gap:0}.helpfab span{display:none}
+.nav{align-items:center}.minnote{display:flex;flex-direction:column;align-items:center;line-height:1.15;font-size:11px;color:var(--muted);background:var(--sunk);border:1px solid var(--line);border-radius:10px;padding:4px 8px}.minnote b{font-size:14px;color:var(--petal)}
 
 .dlv h2{margin-bottom:0}.dlv{gap:16px}.fld{display:grid;gap:6px;margin:0}.fl{font-weight:600;font-size:15px}.fld input,.fld select{width:100%;box-sizing:border-box;min-height:52px;padding:12px 14px;border:1.5px solid var(--line);border-radius:12px;background:var(--surface);color:var(--fg);font:inherit;font-size:16px}
 .fld input:focus,.fld select:focus{outline:0;border-color:var(--leaf);box-shadow:0 0 0 3px rgba(46,106,78,.15)}.fh{font-size:12.5px;color:var(--muted)}.fe{font-size:13.5px;color:#b42318;font-weight:600}.fe:empty{display:none}
@@ -363,7 +364,7 @@ function toast(msg){var t=document.querySelector(".toast");if(!t){t=document.cre
 function header(){
   return '<header class="top"><div class="wrap"><div class="brand"><button class="brand-name" data-act="home">'+esc(data.shop.name)+'</button><span class="brand-sub">ورد اصطناعي بالجملة</span></div><div class="nav">'+
   (S.admin?'<button class="btn btn-sm" data-act="go" data-v="'+(S.view==="admin"?"shop":"admin")+'">'+(S.view==="admin"?"عرض المتجر":"لوحة التاجر")+'</button>':'')+
-  '<button class="btn" data-act="go" data-v="cart" aria-label="السلة">السلة <span class="count" id="cc">'+cartCount()+'</span></button></div></div></header>';
+  (minQ()>1?'<span class="minnote">أقل طلبية<b>'+minQ()+' قطع</b></span>':'')+'<button class="btn" data-act="go" data-v="cart" aria-label="السلة">السلة <span class="count" id="cc">'+cartCount()+'</span></button></div></div></header>';
 }
 function mqMode(p){return options(p).length>=2&&!xdims(p).some(function(d){return xOpts(d).length})}
 function mqTotal(p,m){var q=0,t=0;Object.keys(m||{}).forEach(function(o){var n=+m[o]||0;if(n>0){q+=n;t+=n*priceOf(p,o)}});return{q:q,t:t}}
