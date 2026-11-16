@@ -170,7 +170,7 @@ label.f{display:grid;gap:5px;font-size:13.5px;font-weight:500;min-width:0}
 .new{font-size:11px;background:var(--leaf);color:var(--leaf-ink);border-radius:6px;padding:1px 7px}
 @media (prefers-reduced-motion:no-preference){.card{transition:border-color .15s}.card:hover{border-color:var(--leaf)}}
 
-.pbadge{position:absolute;bottom:12px;inset-inline-end:10px;z-index:2;background:rgba(184,62,98,.95);color:#fff;font-weight:800;font-size:17px;border-radius:999px;padding:5px 12px;box-shadow:0 2px 8px rgba(0,0,0,.25);pointer-events:none}
+.pbadge{position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:2;white-space:nowrap;background:rgba(31,74,58,.94);color:#fff;font-weight:800;font-size:19px;border-radius:999px;padding:6px 16px;box-shadow:0 2px 10px rgba(0,0,0,.3);pointer-events:none}
 .mqg{grid-template-columns:repeat(var(--n,3),minmax(0,1fr));gap:8px}.mqg .xlab{grid-column:1/-1}
 .mqt{grid-template-columns:minmax(0,1fr);padding:6px;gap:6px;text-align:center;align-items:stretch}
 .mqt .mql{flex-direction:column;gap:4px;padding:0;align-items:center;width:100%}
@@ -318,7 +318,7 @@ function options(p){
 function gallery(p,start){
   var ims=p.imgs&&p.imgs.length?p.imgs:[{u:p.img,c:""}];
   if(ims.length<2)return '<div class="ph"><img loading="lazy" decoding="async" src="'+esc(src1(p,ims[0].u))+'" alt="منتج '+esc(p.ref)+'">'+(p.example?'<span class="tag">مثال</span>':'')+pbadge(p)+'</div>';
-  return '<div class="ph"><div class="gal" dir="ltr" data-gal="'+p.id+'" data-start="'+(start||0)+'">'+ims.map(function(m,i){var lb=galLabel(p,m,i);return '<div class="gslide"><img loading="lazy" decoding="async" src="'+esc(src1(p,m.u))+'" alt="منتج '+esc(p.ref)+(m.c?' '+esc(m.c):'')+'">'+(lb?'<span class="glab">'+esc(lb)+'</span>':'')+'</div>'}).join("")+'</div>'+
+  return '<div class="ph"><div class="gal" dir="ltr" data-gal="'+p.id+'" data-start="'+(start||0)+'">'+ims.map(function(m,i){var lb=galLabel(p,m,i);return '<div class="gslide"><img loading="lazy" decoding="async" src="'+esc(src1(p,m.u))+'" alt="منتج '+esc(p.ref)+(m.c?' '+esc(m.c):'')+'">'+''+'</div>'}).join("")+'</div>'+
   pbadge(p)+'<button class="gnav gprev" data-act="gal" data-id="'+p.id+'" data-d="-1" aria-label="الصورة السابقة">‹</button><button class="gnav gnext" data-act="gal" data-id="'+p.id+'" data-d="1" aria-label="الصورة التالية">›</button>'+
   '<div class="dots" data-dots="'+p.id+'">'+ims.map(function(m,i){return '<i'+(i===(start||0)?' class="on"':'')+'></i>'}).join("")+'</div><span class="tag">'+ims.length+' صور</span></div>';
 }
