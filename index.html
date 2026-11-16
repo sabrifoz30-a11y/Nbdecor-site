@@ -345,11 +345,11 @@ function linePrice(p,l){var c=l.ct&&ctnOf(p);return c?c.price:priceFull(p,l.colo
 function lineParts(p,l){var a=varParts(p,l.color,l.x);var c=l.ct&&ctnOf(p);if(c){a=a.concat(["📦 كرطون ("+c.qty+" قطعة)"]);if(!l.color&&options(p).length)a.push(kindWord(p)+": مشكّل")}return a}
 function cartTotal(){return cartLines().reduce(function(s,x){return s+linePrice(x.p,x.l)*x.l.qty},0)}
 function saveCart(){store("cart",cart);if(cart.length)abSave();else abDone()}
-var abT=null;function abSid(){var v=null;try{v=localStorage.getItem("nb-sid")}catch(e){}if(!v||!/^[a-z0-9]{8,40}$/.test(v)){v=(Date.now().toString(36)+Math.random().toString(36).slice(2,10)).replace(/[^a-z0-9]/g,"");try{localStorage.setItem("nb-sid",v)}catch(e){}}return v}
+var abT=null,abTried=false,abFail="";function abSid(){var v=null;try{v=localStorage.getItem("nb-sid")}catch(e){}if(!v||!/^[a-z0-9]{8,40}$/.test(v)){v=(Date.now().toString(36)+Math.random().toString(36).slice(2,10)).replace(/[^a-z0-9]/g,"");try{localStorage.setItem("nb-sid",v)}catch(e){}}return v}
 function abSave(){clearTimeout(abT);abT=setTimeout(function(){try{if(placing||!cart.length||!dzOk(form.phone))return;
   var items=cartLines().map(function(x){return{id:x.p.id,ref:x.p.ref,name:x.p.name||undefined,img:img(x.p,x.l.color),variant:lineParts(x.p,x.l),note:(x.l.note||"").trim()||undefined,color:x.l.color||"",x:x.l.x||{},qty:x.l.qty,price:linePrice(x.p,x.l),carton:x.l.ct&&ctnOf(x.p)?ctnOf(x.p).qty:undefined}});
   var w=form.wilaya?(form.wilaya+" - "+WILAYAS[form.wilaya-1]):"";
-  var cu={name:(form.name||"").trim(),phone:(form.phone||"").trim(),wilaya:w,wilaya_no:form.wilaya?String(form.wilaya):"",commune:form.commune||"",commune_ar:form.commune?comAr(form.commune):"",address:(form.address||"").trim(),delivery:form.delivery||""};
+  var cu={name:(form.name||"").trim(),phone:(form.phone||"").trim(),wilaya:w,wilaya_no:form.wilaya?String(form.wilaya):"",commune:form.commune||"",commune_ar:form.commune?comAr(form.commune):"",address:(form.address||"").trim(),delivery:form.delivery||""};var ers=[];try{ers=formErrors().map(function(e){return e[1]})}catch(e){}cu.why={tried:abTried,errs:ers.slice(0,6),fee:feeFor(form.delivery||"منزل"),pcs:cartPieces(),min:minQ(),fail:abFail||undefined};
   fetch(SB_URL+"/rest/v1/rpc/save_abandoned",{method:"POST",keepalive:true,headers:{"apikey":SB_KEY,"Authorization":"Bearer "+SB_KEY,"Content-Type":"application/json"},body:JSON.stringify({store:STORE,sid:abSid(),customer:cu,items:items,total:cartTotal()})}).catch(function(){})}catch(e){}},1500)}
 var ft0=0;function devId(){var v=null;try{v=localStorage.getItem("nb-dev")}catch(e){}if(!v||!/^[a-z0-9]{8,40}$/.test(v)){v=(Date.now().toString(36)+Math.random().toString(36).slice(2,10)).replace(/[^a-z0-9]/g,"");try{localStorage.setItem("nb-dev",v)}catch(e){}}return v}
 function abDone(){clearTimeout(abT);try{localStorage.removeItem("nb-sid")}catch(e){}}
@@ -534,7 +534,7 @@ function markDirty(){if(!S.dirty){S.dirty=true;render()}}
 /* ---------- events ---------- */
 app.addEventListener("click",function(e){
   var b=e.target.closest("[data-act]");
-  if(e.target.closest("#send")){e.preventDefault();var er=formErrors();if(er.length){showErrs(er);return}placeOrder();return}
+  if(e.target.closest("#send")){e.preventDefault();abTried=true;abSave();var er=formErrors();if(er.length){showErrs(er);return}placeOrder();return}
   if(!b)return;var act=b.dataset.act,id=b.dataset.id;
   var sel=id?(S.sel[id]=S.sel[id]||{qty:1,color:"",x:{}}):null;
   if(act==="go"){S.view=b.dataset.v;render();window.scrollTo(0,0);if(S.view==="cart"&&cartCount())nbTrack("InitiateCheckout",{value:cartTotal(),currency:"DZD",num_items:cartCount()})}
@@ -592,7 +592,7 @@ async function placeOrder(){
     if(!r.ok)throw new Error(await r.text());var no=await r.json();
     var q=shipQ();S.lastOrder={no:no,name:customer.name,phone:customer.phone,wilaya:w,total:cartTotal(),fee:q&&q.fee!=null?q.fee:null,delivery:form.delivery,items:items};
     nbTrack("Purchase",{value:S.lastOrder.total,currency:"DZD",content_ids:items.map(function(i){return i.ref}),content_type:"product",num_items:items.reduce(function(s,i){return s+i.qty},0),order_id:String(no)},{eventID:"order-"+no});cart=[];saveCart();placing=false;S.view="thanks";render();window.scrollTo(0,0);
-  }catch(err){placing=false;if(a){a.removeAttribute("aria-disabled");a.textContent="أرسل الطلبية"}var f=document.getElementById("sendfail");if(f)f.hidden=false;var em=String(err&&err.message||"");toast(/no delivery/.test(em)?"التوصيل غير متاح لولايتك حالياً":/unknown product|no price/.test(em)?"أحد المنتجات في سلتك لم يعد متوفراً، احذفه ثم أعد المحاولة":/min quantity/.test(em)?"أقل كمية للطلب لم تكتمل":/bad phone/.test(em)?"رقم الهاتف خاطئ":"تعذّر إرسال الطلبية، تحقق من الإنترنت وأعد المحاولة")}
+  }catch(err){placing=false;if(a){a.removeAttribute("aria-disabled");a.textContent="أرسل الطلبية"}var f=document.getElementById("sendfail");if(f)f.hidden=false;var em=String(err&&err.message||"");abFail=em.slice(0,160);abSave();toast(/no delivery/.test(em)?"التوصيل غير متاح لولايتك حالياً":/unknown product|no price/.test(em)?"أحد المنتجات في سلتك لم يعد متوفراً، احذفه ثم أعد المحاولة":/min quantity/.test(em)?"أقل كمية للطلب لم تكتمل":/bad phone/.test(em)?"رقم الهاتف خاطئ":"تعذّر إرسال الطلبية، تحقق من الإنترنت وأعد المحاولة")}
 }
 function thanksView(){var o=S.lastOrder||{};
   return '<main class="wrap page thanks"><div class="panel ty"><div class="ty-ico" aria-hidden="true">✓</div><h1>شكراً '+esc(o.name||"")+'، وصلتنا طلبيتك 🌸</h1>'+
