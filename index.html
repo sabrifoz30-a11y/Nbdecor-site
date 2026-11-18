@@ -462,6 +462,8 @@ function openP(id,c){var p=byId(id);if(!p)return;S.gridY=window.scrollY;S.pid=id
   nbTrack("ViewContent",{content_ids:[p.ref],content_type:"product",value:+p.price||0,currency:"DZD"})}
 function closeP(){if(!S.pid)return;S.pid=null;S.gstart=null;render();var y=S.gridY||0;requestAnimationFrame(function(){window.scrollTo(0,y)})}
 window.addEventListener("popstate",function(){if(S.pid)closeP()});
+app.addEventListener("click",function(e){var b=e.target.closest&&e.target.closest("[data-act]");if(!b||!S.pid||!/^(add|mqadd|ctadd)$/.test(b.dataset.act))return;var c0=cartCount();
+  setTimeout(function(){if(S.pid&&cartCount()>c0){if(history.state&&history.state.p){try{history.back()}catch(x){closeP()}}else closeP()}},60)},true);
 function cardPriceText(p,c,xs){var sel={color:c,x:xs||{}},v,pre="";if(selDone(p,sel)&&(c||xdims(p).length))v=priceFull(p,c,xs);else{var r=priceRange(p);if(r){v=r[0];pre="من "}else v=p.price}return pre+fmt(v)+" لل"+uw(p)+" ("+cts(v)+")"}
 function syncCard(id){var p=byId(id),card=document.querySelector('[data-card="'+id+'"]');if(!p||!card)return;var sel=S.sel[id]||{qty:1,color:""};
   var xs=sel.x||{};card.querySelectorAll('.chip').forEach(function(ch){var on=ch.dataset.act==="xopt"?xs[ch.dataset.i]===ch.dataset.c:ch.dataset.c===sel.color;ch.setAttribute("aria-pressed",String(on))});
