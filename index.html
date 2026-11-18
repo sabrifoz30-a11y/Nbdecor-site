@@ -183,6 +183,27 @@ label.f{display:grid;gap:5px;font-size:13.5px;font-weight:500;min-width:0}
 .helpfab{width:46px;height:46px;padding:0!important;justify-content:center;gap:0}.helpfab span{display:none}
 .nav{align-items:center}.minnote{display:flex;flex-direction:column;align-items:center;line-height:1.15;font-size:11px;color:var(--muted);background:var(--sunk);border:1px solid var(--line);border-radius:10px;padding:4px 8px}.minnote b{font-size:14px;color:var(--petal)}
 
+.grid:not(.pone){grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;max-width:900px}
+@media (min-width:720px){.grid:not(.pone){grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}}
+.mini{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;min-width:0;cursor:pointer}
+.mph{position:relative;aspect-ratio:4/5;background:var(--sunk)}.mph img{width:100%;height:100%;object-fit:cover;display:block}
+.mph .pbadge{font-size:15px;padding:4px 11px;top:8px}
+.mimgs{position:absolute;bottom:6px;inset-inline-start:6px;background:rgba(0,0,0,.55);color:#fff;font-size:11px;border-radius:6px;padding:1px 6px}
+.mbody{padding:8px 9px 10px;display:grid;gap:4px;min-width:0}
+.mname{font-size:14px;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mref{font-size:12px;color:var(--muted)}
+.mprice{font-size:16px;font-weight:800;color:var(--petal)}.mprice small{font-size:12px;font-weight:600;color:var(--muted)}
+.mopts{display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin-top:2px}
+.mopt{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:0;width:26px;height:26px;display:grid;place-items:center;overflow:hidden;cursor:pointer}
+.mopt i{width:18px;height:18px;border-radius:50%;border:1px solid rgba(0,0,0,.18);display:block}
+.mopt i.mtx{width:auto;height:auto;border:0;border-radius:0;font-style:normal;font-size:10px;padding:0 4px;white-space:nowrap}
+.mopt.mth{border-radius:7px;width:32px;height:32px}.mopt.mth img{width:100%;height:100%;object-fit:cover}
+.mopt.mmore{width:auto;min-width:26px;padding:0 6px;font-size:12px;font-weight:700;color:var(--muted)}
+.mcnt{font-size:12px;color:var(--muted)}
+.mctn{font-size:12px;color:#8a5a12}
+.ppage{padding-top:6px}.pback{border:0;background:none;color:var(--leaf);font-weight:700;font:inherit;font-weight:700;padding:8px 0;cursor:pointer}
+.pone{max-width:560px}
+
 .dlv h2{margin-bottom:0}.dlv{gap:16px}.fld{display:grid;gap:6px;margin:0}.fl{font-weight:600;font-size:15px}.fld input,.fld select{width:100%;box-sizing:border-box;min-height:52px;padding:12px 14px;border:1.5px solid var(--line);border-radius:12px;background:var(--surface);color:var(--fg);font:inherit;font-size:16px}
 .fld input:focus,.fld select:focus{outline:0;border-color:var(--leaf);box-shadow:0 0 0 3px rgba(46,106,78,.15)}.fh{font-size:12.5px;color:var(--muted)}.fe{font-size:13.5px;color:#b42318;font-weight:600}.fe:empty{display:none}
 .fld.bad input,.fld.bad select{border-color:#d92d20;background:#fff6f5}.fld.bad .fl{color:#b42318}
@@ -369,7 +390,7 @@ function header(){
 function mqMode(p){return options(p).length>=2&&!xdims(p).some(function(d){return xOpts(d).length})}
 function mqTotal(p,m){var q=0,t=0;Object.keys(m||{}).forEach(function(o){var n=+m[o]||0;if(n>0){q+=n;t+=n*priceOf(p,o)}});return{q:q,t:t}}
 function mqCard(p){var sel=S.sel[p.id]||{m:{}},m=sel.m||{},cols=options(p),tt=mqTotal(p,m);
-  return '<article class="card" data-card="'+p.id+'">'+gallery(p,0)+'<div class="body">'+(p.name?'<h3 class="pname">'+esc(p.name)+'</h3>':'')+
+  return '<article class="card" data-card="'+p.id+'">'+gallery(p,gStart(p))+'<div class="body">'+(p.name?'<h3 class="pname">'+esc(p.name)+'</h3>':'')+
   '<div class="info"><span class="ref">'+esc(p.ref)+'</span><span class="price" data-price="'+p.id+'">'+cardPriceText(p,"",{})+'</span></div>'+ctnLine(p)+(p.stems>0?'<span class="small muted">عدد الورد: '+p.stems+'</span>':'')+
   '<div style="--n:'+Math.min(cols.length,3)+'" class="mq mqg'+(S.need[p.id]?' need':'')+'" role="group" aria-label="الكمية لكل '+esc(kindWord(p))+'"><span class="xlab">اختر '+esc(kindWord(p))+' من الصور، واضغط + للكمية:</span>'+cols.map(function(c){var n=+m[c]||0;return '<div class="mqr mqt'+(n>0?' on':'')+'"><button class="mql" data-act="mqlook" data-id="'+p.id+'" data-c="'+esc(c)+'">'+optThumb(p,c)+'<span>'+esc(optLabel(p,c))+'</span>'+(priceRange0(p)?'<small>'+fmt(priceOf(p,c))+'</small>':'')+'</button><div class="step stp"><button data-act="mqinc" data-id="'+p.id+'" data-c="'+esc(c)+'" aria-label="زيادة '+esc(c)+'">+</button><input type="number" inputmode="numeric" min="0" value="'+n+'" data-mq="'+p.id+'" data-c="'+esc(c)+'" aria-label="كمية '+esc(c)+'"><button data-act="mqdec" data-id="'+p.id+'" data-c="'+esc(c)+'" aria-label="إنقاص '+esc(c)+'">−</button></div></div>'}).join("")+'</div>'+
   '<div class="mqsum" data-mqsum="'+p.id+'"'+(tt.q?'':' hidden')+'>المختار: <b>'+tt.q+' '+uw(p)+'</b> · <b>'+fmt(tt.t)+'</b></div>'+
@@ -395,6 +416,24 @@ function pbadge(p){var r=priceRange(p),v=r?r[0]:p.price;return +v>0?'<span class
 function wilN(){var n=0;for(var i=1;i<=58;i++)if(!wilOff(i))n++;return n}
 function optThumb(p,c){var ims=p.imgs||[],j=isModel(p)?ims.findIndex(function(m,i){return (String(m.c||"").trim()||String(i+1))===c}):ims.findIndex(function(m){return sameColor(m.c,c)});
   return j>=0?'<img class="mqi" loading="lazy" decoding="async" src="'+esc(th(src1(p,ims[j].u)))+'" alt="">':'<b class="mqi mqsw" style="background:'+(isColor(p)?hex(c):'var(--sunk)')+'"></b>'}
+function gStart(p){return S.gstart&&S.gstart.id===p.id?Math.max(0,imgIndex(p,S.gstart.c)):0}
+function optWord(p,n){var t=isModel(p)?["موديل","موديلات"]:isColor(p)?["لون","ألوان"]:["خيار","خيارات"];return n+" "+(n>1&&n<11?t[1]:t[0])}
+function miniOpts(p){var o=options(p);if(o.length<2)return "";var max=isModel(p)?4:6,sh=o.slice(0,max),more=o.length-sh.length,ims=p.imgs||[];
+  var it=sh.map(function(c){var inner;if(isModel(p)){var j=ims.findIndex(function(m,i){return (String(m.c||"").trim()||String(i+1))===c});inner=j>=0?'<img loading="lazy" decoding="async" src="'+esc(th(src1(p,ims[j].u)))+'" alt="">':esc(c)}
+    else if(isColor(p)){var hx=hex(c);inner=hx==="transparent"?'<i class="mtx">'+esc(c.slice(0,2))+'</i>':'<i style="background:'+hx+'"></i>'}else inner='<i class="mtx">'+esc(c)+'</i>';
+    return '<button class="mopt'+(isModel(p)?' mth':'')+'" data-act="openp" data-id="'+p.id+'" data-c="'+esc(c)+'" aria-label="'+esc(optLabel(p,c))+'" title="'+esc(c)+'">'+inner+'</button>'}).join("");
+  return '<div class="mopts">'+it+(more>0?'<button class="mopt mmore" data-act="openp" data-id="'+p.id+'">+'+more+'</button>':'')+'</div><span class="mcnt">'+optWord(p,o.length)+'</span>'}
+function miniCard(p){var ims=p.imgs&&p.imgs.length?p.imgs:[{u:p.img,c:""}],r=priceRange(p),v=r?r[0]:p.price;
+  return '<article class="mini" data-act="openp" data-id="'+p.id+'"><div class="mph"><img loading="lazy" decoding="async" src="'+esc(th(src1(p,ims[0].u)))+'" alt="منتج '+esc(p.ref)+'">'+pbadge(p)+(ims.length>1?'<span class="mimgs">'+ims.length+' صور</span>':'')+'</div>'+
+  '<div class="mbody">'+(p.name?'<b class="mname">'+esc(p.name)+'</b>':'')+'<span class="mref">'+esc(p.ref)+'</span><span class="mprice">'+(r?'من ':'')+fmt(v)+' <small>لل'+uw(p)+'</small></span>'+miniOpts(p)+(ctnOf(p)?'<span class="mctn">📦 كرطون متوفر</span>':'')+'</div></article>'}
+function productPage(p){var n=cartCount();return '<main class="wrap ppage"><button class="pback" data-act="closep">→ رجوع إلى كل المنتجات</button><div class="grid pone">'+card(p)+'</div></main>'+
+  (n?'<div class="floatbar"><button class="btn btn-petal" data-act="go" data-v="cart"><span>🛒 السلة: '+n+' قطعة · '+fmt(cartTotal())+'</span><b>أكمل الطلب ←</b></button></div>':'')}
+function openP(id,c){var p=byId(id);if(!p)return;S.gridY=window.scrollY;S.pid=id;S.gstart=c?{id:id,c:c}:null;
+  if(c&&!mqMode(p)){var s0=S.sel[id]||{qty:1,color:"",x:{}};s0.color=c;S.sel[id]=s0}
+  try{history.pushState({p:id},"")}catch(e){}render();window.scrollTo(0,0);
+  nbTrack("ViewContent",{content_ids:[p.ref],content_type:"product",value:+p.price||0,currency:"DZD"})}
+function closeP(){if(!S.pid)return;S.pid=null;S.gstart=null;render();var y=S.gridY||0;requestAnimationFrame(function(){window.scrollTo(0,y)})}
+window.addEventListener("popstate",function(){if(S.pid)closeP()});
 function cardPriceText(p,c,xs){var sel={color:c,x:xs||{}},v,pre="";if(selDone(p,sel)&&(c||xdims(p).length))v=priceFull(p,c,xs);else{var r=priceRange(p);if(r){v=r[0];pre="من "}else v=p.price}return pre+fmt(v)+" لل"+uw(p)+" ("+cts(v)+")"}
 function syncCard(id){var p=byId(id),card=document.querySelector('[data-card="'+id+'"]');if(!p||!card)return;var sel=S.sel[id]||{qty:1,color:""};
   var xs=sel.x||{};card.querySelectorAll('.chip').forEach(function(ch){var on=ch.dataset.act==="xopt"?xs[ch.dataset.i]===ch.dataset.c:ch.dataset.c===sel.color;ch.setAttribute("aria-pressed",String(on))});
@@ -409,14 +448,14 @@ function gridHtml(){
   var list=sorted(data.products.filter(function(p){return (!S.cat||p.cat===S.cat)&&(!q||(String(p.ref).toLowerCase().indexOf(q)>-1||String(p.name||"").toLowerCase().indexOf(q)>-1))}));
   if(!data.products.length)return '<div class="empty">لا توجد منتجات بعد.</div>';
   if(!list.length)return '<div class="empty">'+(q?'لا يوجد منتج بهذا المرجع.':'لا توجد منتجات في هذا التصنيف بعد.')+'</div>';
-  return list.map(card).join("");
+  return list.map(miniCard).join("");
 }
 
 function catImg(c){var m=(data.shop.catImgs||{})[c];if(m)return m;var p=data.products.find(function(x){return !c||x.cat===c});return p?th(img(p)):""}
 function homeView(){var cats=data.shop.cats||[];var tiles=[["",'كل المنتجات']].concat(cats.map(function(c){return[c,c]}));
   return '<main class="wrap">'+(data.shop.note?'<div class="note">'+esc(data.shop.note)+'</div>':'')+'<h1 class="home-h">اختر ما تبحث عنه 🌸</h1><div class="ctiles">'+tiles.map(function(t){var n=data.products.filter(function(p){return !t[0]||p.cat===t[0]}).length,u=t[0]?catImg(t[0]):((data.shop.catImgs||{})["__all"]||catImg(""));
     return '<button class="ctile'+(t[0]?'':' all')+'" data-act="gocat" data-v="'+esc(t[0])+'">'+(u?'<img src="'+esc(u)+'" alt="" loading="lazy" decoding="async">':'')+'<span class="ct-l"><b>'+esc(t[1])+'</b><small>'+n+' منتج</small></span></button>'}).join("")+'</div></main>'}
-function shopView(){var _hv=0;try{_hv=localStorage.getItem("nb-howto")}catch(e){}if(!_hv&&!S.howSeen){S.howSeen=1;S.howOpen=true}
+function shopView(){if(S.pid&&byId(S.pid))return productPage(byId(S.pid));var _hv=0;try{_hv=localStorage.getItem("nb-howto")}catch(e){}if(!_hv&&!S.howSeen){S.howSeen=1;S.howOpen=true}
   var n=cartCount();
   return '<main class="wrap">'+(data.shop.note?'<div class="note">'+esc(data.shop.note)+'</div>':'')+
   howStrip()+'<nav class="cats" aria-label="التصنيفات">'+[""].concat(data.shop.cats).map(function(c){var n=data.products.filter(function(p){return !c||p.cat===c}).length;return '<button class="cat" data-act="cat" data-v="'+esc(c)+'" aria-pressed="'+(S.cat===c)+'">'+(c?esc(c):'الكل')+' <span>'+n+'</span></button>'}).join("")+'</nav>'+
@@ -551,7 +590,9 @@ app.addEventListener("click",function(e){
   else if(act==="howclose"){S.howOpen=false;try{localStorage.setItem("nb-howto","1")}catch(e){}render()}
   else if(act==="dlpick"){form.delivery=b.dataset.v;store("form",form);reDl();clearErr("delivery");loadCom();updShip();refreshSend()}
   else if(act==="gocat"){S.cat=b.dataset.v;S.home=false;try{history.pushState({c:1},"")}catch(e){}render();window.scrollTo(0,0);nbTrack("ViewContent",{content_category:S.cat||"الكل",content_type:"product_group"})}
-  else if(act==="home"){S.view="shop";S.cat="";render();window.scrollTo(0,0)}
+  else if(act==="openp"){openP(b.dataset.id,b.dataset.c||"")}
+  else if(act==="closep"){if(history.state&&history.state.p){try{history.back()}catch(e){closeP()}}else closeP()}
+  else if(act==="home"){S.view="shop";S.cat="";S.pid=null;render();window.scrollTo(0,0)}
   else if(act==="cat"){S.cat=b.dataset.v;render();nbTrack("ViewContent",{content_category:S.cat||"الكل",content_type:"product_group"})}
   else if(act==="catadd"){var nc=String(S.newCat||"").trim();if(!nc){toast("اكتب اسم التصنيف أولاً");return}if(data.shop.cats.indexOf(nc)>-1){toast("هذا التصنيف موجود");return}data.shop.cats.push(nc);S.newCat="";S.upCat=nc;S.dirty=true;render();toast("أُنشئ التصنيف «"+nc+"»")}
   else if(act==="catdel"){var k=+b.dataset.k,old=data.shop.cats[k];if(data.shop.cats.length<2)return;data.shop.cats.splice(k,1);var to=data.shop.cats[0],moved=0;data.products.forEach(function(p){if(p.cat===old){p.cat=to;moved++}});if(S.upCat===old)S.upCat="";if(S.cat===old)S.cat="";S.dirty=true;render();toast("حُذف «"+old+"»"+(moved?" ونُقل "+moved+" منتج إلى «"+to+"»":""))}
