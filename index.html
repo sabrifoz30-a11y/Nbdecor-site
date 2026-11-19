@@ -669,7 +669,7 @@ async function placeOrder(){
     if(!r.ok)throw new Error(await r.text());var no=await r.json();
     var q=shipQ();S.lastOrder={no:no,name:customer.name,phone:customer.phone,wilaya:w,total:cartTotal(),fee:q&&q.fee!=null?q.fee:null,delivery:form.delivery,items:items};
     nbTrack("Purchase",{value:S.lastOrder.total,currency:"DZD",content_ids:items.map(function(i){return i.ref}),content_type:"product",num_items:items.reduce(function(s,i){return s+i.qty},0),order_id:String(no)},{eventID:"order-"+no});cart=[];saveCart();placing=false;S.view="thanks";render();window.scrollTo(0,0);
-  }catch(err){placing=false;if(a){a.removeAttribute("aria-disabled");a.innerHTML='✅ تأكيد الطلب · <span id="sbtot">'+fmt(grandTotal())+'</span>'}var f=document.getElementById("sendfail");if(f)f.hidden=false;var em=String(err&&err.message||"");abFail=em.slice(0,160);abSave();toast(/no delivery/.test(em)?"التوصيل غير متاح لولايتك حالياً":/unknown product|no price/.test(em)?"أحد المنتجات في سلتك لم يعد متوفراً، احذفه ثم أعد المحاولة":/min quantity/.test(em)?"أقل كمية للطلب لم تكتمل":/bad phone/.test(em)?"رقم الهاتف خاطئ":"تعذّر إرسال الطلبية، تحقق من الإنترنت وأعد المحاولة")}
+  }catch(err){placing=false;if(a){a.removeAttribute("aria-disabled");a.innerHTML='✅ تأكيد الطلب · <span id="sbtot">'+fmt(grandTotal())+'</span>'}var f=document.getElementById("sendfail");if(f)f.hidden=false;var em=String(err&&err.message||"");abFail=em.slice(0,160);abSave();TK("fail",{m:abFail});toast(/no delivery/.test(em)?"التوصيل غير متاح لولايتك حالياً":/unknown product|no price/.test(em)?"أحد المنتجات في سلتك لم يعد متوفراً، احذفه ثم أعد المحاولة":/min quantity/.test(em)?"أقل كمية للطلب لم تكتمل":/bad phone/.test(em)?"رقم الهاتف خاطئ":"تعذّر إرسال الطلبية، تحقق من الإنترنت وأعد المحاولة")}
 }
 function thanksView(){var o=S.lastOrder||{};
   return '<main class="wrap page thanks"><div class="panel ty"><div class="ty-ico" aria-hidden="true">✓</div><h1>شكراً '+esc(o.name||"")+'، وصلتنا طلبيتك 🌸</h1>'+
@@ -914,6 +914,42 @@ render();
     if(v==="admin")S.view="admin";
     render();
   }catch(e){}
+})();
+
+;(function(){
+  var off=false;try{off=localStorage.getItem("nb-staff")==="1"||/[?&]notrack/.test(location.search);if(/[?&]notrack/.test(location.search))localStorage.setItem("nb-staff","1")}catch(e){}
+  var Q=[],T=null,t0=Date.now(),filled={};
+  function rid(){return (Date.now().toString(36)+Math.random().toString(36).slice(2,10)).replace(/[^a-z0-9]/g,"")}
+  function sess(){var s=null;try{s=JSON.parse(localStorage.getItem("nb-sess")||"null")}catch(e){}var now=Date.now();if(!s||!/^[a-z0-9]{8,40}$/.test(s.id)||now-s.t>30*60000)s={id:rid(),t:now,n:1};s.t=now;try{localStorage.setItem("nb-sess",JSON.stringify(s))}catch(e){}return s.id}
+  function flush(keep){if(!Q.length)return;var b=Q.splice(0,40);try{fetch(SB_URL+"/rest/v1/rpc/track",{method:"POST",keepalive:!!keep,headers:{"apikey":SB_KEY,"Authorization":"Bearer "+SB_KEY,"Content-Type":"application/json"},body:JSON.stringify({store:STORE,vid:devId(),sid:sess(),evs:b})}).catch(function(){})}catch(e){}if(Q.length)flush(keep)}
+  window.TK=function(e,d){if(off)return;Q.push({e:e,d:d||{},t:Date.now()});clearTimeout(T);T=setTimeout(flush,1500)};
+  var orig=window.nbTrack;window.nbTrack=function(ev,p,o){try{p=p||{};var ref=(p.content_ids||[])[0];
+    if(ev==="ViewContent"&&p.content_type==="product")TK("view",{ref:ref,c:(S.gstart&&S.gstart.c)||undefined});
+    else if(ev==="ViewContent")TK("cat",{c:p.content_category||""});
+    else if(ev==="AddToCart")TK("add",{ref:ref,q:p.num_items||undefined,v:Math.round(+p.value||0)});
+    else if(ev==="InitiateCheckout")TK("cart",{n:cartCount(),v:Math.round(cartTotal())});
+    else if(ev==="Purchase")TK("order",{no:p.order_id,v:Math.round(+p.value||0)})}catch(x){}
+    return orig&&orig.apply(this,arguments)};
+  function src(){var u=new URLSearchParams(location.search),r="";try{r=document.referrer?new URL(document.referrer).hostname:""}catch(e){}var ua=navigator.userAgent||"";
+    var us=(u.get("utm_source")||"").toLowerCase();
+    if(u.get("fbclid")||/^(fb|facebook|ig|instagram|meta)/.test(us))return "فيسبوك / إنستغرام (إعلان)";
+    if(u.get("ttclid")||/tiktok/.test(us))return "تيك توك (إعلان)";
+    if(/FBAN|FBAV|FB_IAB|Instagram/.test(ua))return "تطبيق فيسبوك / إنستغرام";
+    if(/facebook|fb\.|instagram/.test(r))return "فيسبوك / إنستغرام";if(/tiktok/.test(r))return "تيك توك";if(/google/.test(r))return "غوغل";
+    if(/whatsapp|wa\.me/.test(r)||/WhatsApp/.test(ua))return "واتساب";if(us)return us;if(r&&r!==location.hostname)return r;return "مباشر"}
+  TK("visit",{src:src(),dev:innerWidth<768?"هاتف":"كمبيوتر",cmp:new URLSearchParams(location.search).get("utm_campaign")||undefined});
+  app.addEventListener("click",function(e){var b=e.target.closest&&e.target.closest("[data-act],#send,.helpfab");if(!b)return;
+    if(b.id==="send"){var er=[];try{er=formErrors().map(function(x){return x[0]})}catch(x){}TK("send",{errs:er,v:Math.round(grandTotal())})}
+    else if(b.classList.contains("helpfab"))TK("help",{});
+    else if(b.dataset.act==="howto")TK("howto",{});
+    else if(b.dataset.act==="go"&&b.dataset.v==="shop")TK("shop",{})},true);
+  var qT=null;app.addEventListener("input",function(e){var t=e.target;
+    if(t.id==="q"){clearTimeout(qT);var v=t.value.trim();if(v)qT=setTimeout(function(){TK("search",{q:v.slice(0,40)})},1500)}
+    var f=t.dataset&&t.dataset.f;if(f&&!filled[f]&&String(t.value||"").trim()){filled[f]=1;TK("fill",{f:f})}},true);
+  app.addEventListener("change",function(e){var f=e.target.dataset&&e.target.dataset.f;if(f&&!filled[f]&&String(e.target.value||"").trim()){filled[f]=1;TK("fill",{f:f})}},true);
+  function leave(){TK("leave",{sec:Math.round((Date.now()-t0)/1000),at:S.view==="cart"?"السلة":S.pid?("منتج "+((byId(S.pid)||{}).ref||"")):S.view==="thanks"?"صفحة الشكر":"المنتجات"});clearTimeout(T);flush(true)}
+  document.addEventListener("visibilitychange",function(){if(document.visibilityState==="hidden")leave()});
+  window.addEventListener("pagehide",leave);
 })();
 })();
 </script>
