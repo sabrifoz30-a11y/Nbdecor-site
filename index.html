@@ -986,9 +986,9 @@ function channelView(){var all=chAll();if(!all)return '<div class="chan"><header
     var list=sorted(all.filter(function(p){return !S.ccat||p.cat===S.ccat}));
     return '<div class="chan"><header class="chtop"><div class="chav">🌹</div><div class="chti"><b>'+esc(data.shop.name||"ورد الجملة")+'</b><small>'+all.length+' منتج · أسعار الجملة · الدفع عند الاستلام</small></div><a class="chshop" href="/">المتجر</a></header>'+
     '<nav class="chcats">'+cats.map(function(c){return '<button data-act="ccat" data-v="'+esc(c)+'" aria-pressed="'+((S.ccat||"")===c)+'">'+(c?esc(c):'الكل')+'</button>'}).join("")+'</nav>'+
-    '<div class="chfeed"><div class="chpin">📌 اضغط <b>⬇️ تحميل</b> تحت أي صورة لحفظها في هاتفك، واختر ما يعجبك بـ <b>✓ أريد هذا</b> ثم اضغط <b>اطلب عبر واتساب</b> في الأسفل. أقل طلبية '+minQ()+' قطع.</div>'+
+    '<div class="chfeed"><div class="chpin">📌 اضغط <b>⬇️ تحميل</b> على صور المنتجات التي تريدها لحفظها في هاتفك، ثم اضغط <b>إرسال صور الطلبية عبر الواتساب</b> في الأسفل وأرسلها لنا مع الكمية. أقل طلبية '+minQ()+' قطع.</div>'+
     list.map(chPost).join("")+'</div>'+
-    '<div class="chbar"><a class="chwa" data-act="cwa" href="'+esc(chWaUrl())+'" target="_blank" rel="noopener">💬 اطلب عبر واتساب'+(n?' <span>('+n+' منتج)</span>':'')+'</a></div></div>'}
+    '<div class="chbar"><a class="chwa" data-act="cwa" href="'+esc(chWaUrl())+'" target="_blank" rel="noopener">💬 إرسال صور الطلبية عبر الواتساب</a></div></div>'}
   function chImgs(p){var ims=p.imgs&&p.imgs.length?p.imgs:[{u:p.img,c:""}];return ims.filter(function(m){return m&&m.u})}
   function chPost(p){var ims=chImgs(p),r=priceRange(p),v=r?r[0]:p.price,on=!!(S.cs||{})[p.id],o=options(p),c=ctnOf(p);
     var alb='<div class="chalb n'+Math.min(ims.length,4)+'">'+ims.map(function(m,i){var lb=isModel(p)?(String(m.c||"").trim()||String(i+1)):String(m.c||"").trim();
@@ -997,11 +997,10 @@ function channelView(){var all=chAll();if(!all)return '<div class="chan"><header
     return '<article class="chpost'+(on?' on':'')+'">'+alb+'<div class="chcap"><div><b dir="ltr" class="chref">'+esc(p.ref)+'</b>'+(p.name?' · '+esc(p.name):'')+'</div>'+
       '<div class="chpr">💰 '+(r?'من ':'')+fmt(v)+' لل'+uw(p)+' <small>('+cts(v)+')</small></div>'+
       (c?'<div>📦 بالكرطون ('+c.qty+' '+uw(p)+'): ال'+uw(p)+' بـ '+fmt(Math.round(c.price/c.qty))+'</div>':'')+
-      (o.length?'<div>🎨 '+esc(isModel(p)?o.length+" موديلات":o.join("، "))+'</div>':'')+(+p.stems>1?'<div>🌹 عدد الورد: '+p.stems+'</div>':'')+
-      '<button class="chsel" data-act="csel" data-id="'+p.id+'" aria-pressed="'+on+'">'+(on?'✅ اخترته':'✓ أريد هذا')+'</button></div></article>'}
-  function chWaUrl(){var cs=S.cs||{},ids=Object.keys(cs),t="السلام عليكم 🌹\nأريد الطلب من قناة "+(data.shop.name||"ورد الجملة");
+      (o.length?'<div>🎨 '+esc(isModel(p)?o.length+" موديلات":o.join("، "))+'</div>':'')+(+p.stems>1?'<div>🌹 عدد الورد: '+p.stems+'</div>':'')+'</div></article>'}
+  function chWaUrl(){var ids=[],t="السلام عليكم 🌹\nأريد الطلب من قناة "+(data.shop.name||"ورد الجملة");
     if(ids.length)t+=":\n"+ids.map(function(id){var p=chById(id);if(!p)return "";var r=priceRange(p),v=r?r[0]:p.price;return "• "+p.ref+(p.name?" ("+p.name+")":"")+" — "+fmt(v)+" لل"+uw(p)}).filter(Boolean).join("\n")+"\n\nالكميات والألوان: ";
-    else t+=".\nسأرسل لكم صور المنتجات التي أريدها.";
+    else t+="، هذه صور المنتجات التي أريدها مع الكمية:";
     return "https://wa.me/"+waPhone()+"?text="+encodeURIComponent(t)}
   async function chDl(u,name,b){var fn=String(name||"photo").replace(/[^A-Za-z0-9؀-ۿ_-]+/g,"-")+".jpg";b.disabled=true;var old=b.textContent;b.textContent="⏳ جارٍ التحميل…";
     try{var r=await fetch(u,{mode:"cors"});if(!r.ok)throw 0;var bl=await r.blob(),f=new File([bl],fn,{type:bl.type||"image/jpeg"});
