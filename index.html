@@ -979,9 +979,12 @@ render();
   window.addEventListener("pagehide",leave);
 })();
 
-function channelView(){var cats=[""].concat(data.shop.cats||[]),cs=S.cs||{},n=Object.keys(cs).length;
-    var list=sorted(data.products.filter(function(p){return !S.ccat||p.cat===S.ccat}));
-    return '<div class="chan"><header class="chtop"><div class="chav">🌹</div><div class="chti"><b>'+esc(data.shop.name||"ورد الجملة")+'</b><small>'+data.products.length+' منتج · أسعار الجملة · الدفع عند الاستلام</small></div><a class="chshop" href="/">المتجر</a></header>'+
+function chAll(){if(S.chP===undefined){S.chP=null;fetch(SB_URL+"/rest/v1/rpc/channel_products",{method:"POST",headers:{"apikey":SB_KEY,"Authorization":"Bearer "+SB_KEY,"Content-Type":"application/json"},body:JSON.stringify({store:STORE})}).then(function(r){return r.ok?r.json():[]}).then(function(l){S.chP=(Array.isArray(l)?l:[]).filter(function(p){return p&&p.id});render()}).catch(function(){S.chP=data.products;render()})}return S.chP}
+function chById(id){return (S.chP||[]).find(function(p){return p.id===id})||byId(id)}
+function channelView(){var all=chAll();if(!all)return '<div class="chan"><header class="chtop"><div class="chav">🌹</div><div class="chti"><b>'+esc(data.shop.name||"ورد الجملة")+'</b><small>جارٍ التحميل…</small></div></header><div class="chfeed"><div class="chpin">جارٍ تحميل المنتجات…</div></div></div>';
+    var cats=[""].concat((data.shop.cats||[]).filter(function(c){return all.some(function(p){return p.cat===c})})),cs=S.cs||{},n=Object.keys(cs).length;
+    var list=sorted(all.filter(function(p){return !S.ccat||p.cat===S.ccat}));
+    return '<div class="chan"><header class="chtop"><div class="chav">🌹</div><div class="chti"><b>'+esc(data.shop.name||"ورد الجملة")+'</b><small>'+all.length+' منتج · أسعار الجملة · الدفع عند الاستلام</small></div><a class="chshop" href="/">المتجر</a></header>'+
     '<nav class="chcats">'+cats.map(function(c){return '<button data-act="ccat" data-v="'+esc(c)+'" aria-pressed="'+((S.ccat||"")===c)+'">'+(c?esc(c):'الكل')+'</button>'}).join("")+'</nav>'+
     '<div class="chfeed"><div class="chpin">📌 اضغط <b>⬇️ تحميل</b> تحت أي صورة لحفظها في هاتفك، واختر ما يعجبك بـ <b>✓ أريد هذا</b> ثم اضغط <b>اطلب عبر واتساب</b> في الأسفل. أقل طلبية '+minQ()+' قطع.</div>'+
     list.map(chPost).join("")+'</div>'+
@@ -997,7 +1000,7 @@ function channelView(){var cats=[""].concat(data.shop.cats||[]),cs=S.cs||{},n=Ob
       (o.length?'<div>🎨 '+esc(isModel(p)?o.length+" موديلات":o.join("، "))+'</div>':'')+(+p.stems>1?'<div>🌹 عدد الورد: '+p.stems+'</div>':'')+
       '<button class="chsel" data-act="csel" data-id="'+p.id+'" aria-pressed="'+on+'">'+(on?'✅ اخترته':'✓ أريد هذا')+'</button></div></article>'}
   function chWaUrl(){var cs=S.cs||{},ids=Object.keys(cs),t="السلام عليكم 🌹\nأريد الطلب من قناة "+(data.shop.name||"ورد الجملة");
-    if(ids.length)t+=":\n"+ids.map(function(id){var p=byId(id);if(!p)return "";var r=priceRange(p),v=r?r[0]:p.price;return "• "+p.ref+(p.name?" ("+p.name+")":"")+" — "+fmt(v)+" لل"+uw(p)}).filter(Boolean).join("\n")+"\n\nالكميات والألوان: ";
+    if(ids.length)t+=":\n"+ids.map(function(id){var p=chById(id);if(!p)return "";var r=priceRange(p),v=r?r[0]:p.price;return "• "+p.ref+(p.name?" ("+p.name+")":"")+" — "+fmt(v)+" لل"+uw(p)}).filter(Boolean).join("\n")+"\n\nالكميات والألوان: ";
     else t+=".\nسأرسل لكم صور المنتجات التي أريدها.";
     return "https://wa.me/"+waPhone()+"?text="+encodeURIComponent(t)}
   async function chDl(u,name,b){var fn=String(name||"photo").replace(/[^A-Za-z0-9؀-ۿ_-]+/g,"-")+".jpg";b.disabled=true;var old=b.textContent;b.textContent="⏳ جارٍ التحميل…";
@@ -1009,9 +1012,9 @@ function channelView(){var cats=[""].concat(data.shop.cats||[]),cs=S.cs||{},n=Ob
     setTimeout(function(){b.disabled=false;b.textContent=old},2200)}
   app.addEventListener("click",function(e){if(!S.chan)return;var b=e.target.closest&&e.target.closest("[data-act]");if(!b)return;var a=b.dataset.act;
     if(a==="cdl"){e.preventDefault();e.stopPropagation();chDl(b.dataset.u,b.dataset.n,b)}
-    else if(a==="csel"){e.stopPropagation();S.cs=S.cs||{};var id=b.dataset.id;if(S.cs[id])delete S.cs[id];else{S.cs[id]=1;TK("pick",{ref:(byId(id)||{}).ref})}var y=window.scrollY;render();window.scrollTo(0,y)}
+    else if(a==="csel"){e.stopPropagation();S.cs=S.cs||{};var id=b.dataset.id;if(S.cs[id])delete S.cs[id];else{S.cs[id]=1;TK("pick",{ref:(chById(id)||{}).ref})}var y=window.scrollY;render();window.scrollTo(0,y)}
     else if(a==="ccat"){e.stopPropagation();S.ccat=b.dataset.v;render();window.scrollTo(0,0);TK("cat",{c:S.ccat||""})}
-    else if(a==="cwa"){var ids=Object.keys(S.cs||{});TK("wa",{n:ids.length,refs:ids.map(function(id){return (byId(id)||{}).ref}).slice(0,30)})}},true);
+    else if(a==="cwa"){var ids=Object.keys(S.cs||{});TK("wa",{n:ids.length,refs:ids.map(function(id){return (chById(id)||{}).ref}).slice(0,30)})}},true);
 })();
 </script>
 </body></html>
