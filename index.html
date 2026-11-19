@@ -235,6 +235,33 @@ label.f{display:grid;gap:5px;font-size:13.5px;font-weight:500;min-width:0}
 .floatbar .btn{max-width:400px;padding:8px 14px!important;gap:1px;border-radius:999px;box-shadow:0 4px 14px rgba(184,62,98,.35)}
 .floatbar .btn b{font-size:16px!important}.floatbar .btn span{font-size:12px;opacity:.92}
 
+.chan{min-height:100vh;background:#dfe7d6 radial-gradient(circle at 20% 10%,rgba(255,255,255,.35) 0 2px,transparent 3px) 0 0/26px 26px;padding-bottom:96px}
+.chtop{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:10px;background:#517da2;color:#fff;padding:10px 14px;padding-top:calc(10px + env(safe-area-inset-top,0px))}
+.chav{width:42px;height:42px;border-radius:50%;background:var(--surface);color:var(--fg);display:grid;place-items:center;font-size:22px;flex-shrink:0}
+.chti{display:grid;min-width:0}.chti b{font-size:17px}.chti small{font-size:12px;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chshop{margin-inline-start:auto;color:#fff;font-size:13px;border:1px solid rgba(255,255,255,.6);border-radius:999px;padding:4px 10px;text-decoration:none;white-space:nowrap}
+.chcats{display:flex;gap:6px;overflow-x:auto;padding:8px 10px;position:sticky;top:62px;z-index:4;background:rgba(223,231,214,.95)}
+.chcats button{border:0;border-radius:999px;padding:6px 12px;background:var(--surface);color:var(--fg);font:inherit;font-size:14px;white-space:nowrap;color:#2b5278}
+.chcats button[aria-pressed="true"]{background:#517da2;color:#fff}
+.chfeed{max-width:520px;margin:0 auto;padding:8px 10px;display:grid;gap:12px}
+.chpin{background:var(--surface);color:var(--fg);border-radius:12px;padding:10px 12px;font-size:14px;line-height:1.7;box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.chpost{background:var(--surface);color:var(--fg);border-radius:14px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,.15)}
+.chpost.on{outline:3px solid #4fae4e}
+.chalb{display:grid;gap:2px}.chalb.n2,.chalb.n3,.chalb.n4{grid-template-columns:1fr 1fr}
+.chalb figure{margin:0;position:relative;background:#eee}.chalb img{width:100%;aspect-ratio:4/5;object-fit:cover;display:block}
+.chalb.n1 img{aspect-ratio:auto;max-height:560px}
+.chlb{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.55);color:#fff;font-size:12px;border-radius:8px;padding:2px 8px}
+.chdl{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);border:0;border-radius:999px;background:#1d9bf0;color:#fff;font:inherit;font-weight:800;font-size:14px;padding:8px 14px;box-shadow:0 2px 8px rgba(0,0,0,.35);white-space:nowrap;cursor:pointer}
+.chalb.n2 .chdl,.chalb.n3 .chdl,.chalb.n4 .chdl{font-size:12px;padding:6px 10px}
+.chcap{padding:10px 12px 12px;display:grid;gap:4px;font-size:15px;line-height:1.6;color:#111}
+.chref{font-size:16px}.chpr{font-weight:800;color:#b83e62}.chpr small{font-weight:600;color:#666}
+.chsel{justify-self:start;margin-top:6px;border:1.5px solid #4fae4e;color:#2e7d32;background:var(--surface);color:var(--fg);border-radius:999px;padding:7px 14px;font:inherit;font-weight:700;cursor:pointer}
+.chsel[aria-pressed="true"]{background:#4fae4e;color:#fff}
+.chbar{position:fixed;bottom:0;left:0;right:0;z-index:8;padding:10px 14px calc(10px + env(safe-area-inset-bottom,0px));background:rgba(255,255,255,.96);box-shadow:0 -4px 16px rgba(0,0,0,.12)}
+.chwa{display:flex;justify-content:center;align-items:center;gap:6px;max-width:480px;margin:0 auto;min-height:56px;border-radius:14px;background:#25d366;color:#fff;font-weight:800;font-size:18px;text-decoration:none;box-shadow:0 4px 0 #1a9e4b}
+.chwa span{font-size:14px;opacity:.95}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .chan{background:#0e1621}:root:not([data-theme="light"]) .chpost,:root:not([data-theme="light"]) .chpin{background:#182533;color:#e9eef2}:root:not([data-theme="light"]) .chcap{color:#e9eef2}:root:not([data-theme="light"]) .chcats{background:rgba(14,22,33,.95)}:root:not([data-theme="light"]) .chsel{background:transparent}:root:not([data-theme="light"]) .chbar{background:rgba(23,33,43,.96)}}
+
 .dlv h2{margin-bottom:0}.dlv{gap:16px}.fld{display:grid;gap:6px;margin:0}.fl{font-weight:600;font-size:15px}.fld input,.fld select{width:100%;box-sizing:border-box;min-height:52px;padding:12px 14px;border:1.5px solid var(--line);border-radius:12px;background:var(--surface);color:var(--fg);font:inherit;font-size:16px}
 .fld input:focus,.fld select:focus{outline:0;border-color:var(--leaf);box-shadow:0 0 0 3px rgba(46,106,78,.15)}.fh{font-size:12.5px;color:var(--muted)}.fe{font-size:13.5px;color:#b42318;font-weight:600}.fe:empty{display:none}
 .fld.bad input,.fld.bad select{border-color:#d92d20;background:#fff6f5}.fld.bad .fl{color:#b42318}
@@ -592,7 +619,7 @@ function pastedHtml(){
 }
 function render(){
   var ae=document.activeElement,fid=ae&&ae.id&&app.contains(ae)?ae.id:null,ss=null,se=null;try{ss=ae.selectionStart;se=ae.selectionEnd}catch(e){}
-  app.innerHTML=header()+(S.view==="thanks"?thanksView():(S.view==="cart"?cartView():S.view==="admin"&&S.admin?adminView():shopView())+(S.howOpen?howModal():"")+helpFab());galInit();
+  app.innerHTML=(S.chan===undefined?(S.chan=/[?&]ch=1/.test(location.search)):S.chan)?channelView():header()+(S.view==="thanks"?thanksView():(S.view==="cart"?cartView():S.view==="admin"&&S.admin?adminView():shopView())+(S.howOpen?howModal():"")+helpFab());galInit();
   if(fid){var ne=document.getElementById(fid);if(ne){try{ne.focus({preventScroll:true});if(ss!=null)ne.setSelectionRange(ss,se)}catch(e){}}}
 }
 function refreshGrid(){var g=document.getElementById("grid");if(g)g.innerHTML=gridHtml();galInit()}
@@ -937,7 +964,7 @@ render();
     if(/FBAN|FBAV|FB_IAB|Instagram/.test(ua))return "تطبيق فيسبوك / إنستغرام";
     if(/facebook|fb\.|instagram/.test(r))return "فيسبوك / إنستغرام";if(/tiktok/.test(r))return "تيك توك";if(/google/.test(r))return "غوغل";
     if(/whatsapp|wa\.me/.test(r)||/WhatsApp/.test(ua))return "واتساب";if(us)return us;if(r&&r!==location.hostname)return r;return "مباشر"}
-  TK("visit",{src:src(),dev:innerWidth<768?"هاتف":"كمبيوتر",cmp:new URLSearchParams(location.search).get("utm_campaign")||undefined});
+  TK("visit",{ch:/[?&]ch=1/.test(location.search)?1:undefined,src:src(),dev:innerWidth<768?"هاتف":"كمبيوتر",cmp:new URLSearchParams(location.search).get("utm_campaign")||undefined});
   app.addEventListener("click",function(e){var b=e.target.closest&&e.target.closest("[data-act],#send,.helpfab");if(!b)return;
     if(b.id==="send"){var er=[];try{er=formErrors().map(function(x){return x[0]})}catch(x){}TK("send",{errs:er,v:Math.round(grandTotal())})}
     else if(b.classList.contains("helpfab"))TK("help",{});
@@ -947,10 +974,44 @@ render();
     if(t.id==="q"){clearTimeout(qT);var v=t.value.trim();if(v)qT=setTimeout(function(){TK("search",{q:v.slice(0,40)})},1500)}
     var f=t.dataset&&t.dataset.f;if(f&&!filled[f]&&String(t.value||"").trim()){filled[f]=1;TK("fill",{f:f})}},true);
   app.addEventListener("change",function(e){var f=e.target.dataset&&e.target.dataset.f;if(f&&!filled[f]&&String(e.target.value||"").trim()){filled[f]=1;TK("fill",{f:f})}},true);
-  function leave(){TK("leave",{sec:Math.round((Date.now()-t0)/1000),at:S.view==="cart"?"السلة":S.pid?("منتج "+((byId(S.pid)||{}).ref||"")):S.view==="thanks"?"صفحة الشكر":"المنتجات"});clearTimeout(T);flush(true)}
+  function leave(){TK("leave",{sec:Math.round((Date.now()-t0)/1000),at:S.chan?"القناة":S.view==="cart"?"السلة":S.pid?("منتج "+((byId(S.pid)||{}).ref||"")):S.view==="thanks"?"صفحة الشكر":"المنتجات"});clearTimeout(T);flush(true)}
   document.addEventListener("visibilitychange",function(){if(document.visibilityState==="hidden")leave()});
   window.addEventListener("pagehide",leave);
 })();
+
+function channelView(){var cats=[""].concat(data.shop.cats||[]),cs=S.cs||{},n=Object.keys(cs).length;
+    var list=sorted(data.products.filter(function(p){return !S.ccat||p.cat===S.ccat}));
+    return '<div class="chan"><header class="chtop"><div class="chav">🌹</div><div class="chti"><b>'+esc(data.shop.name||"ورد الجملة")+'</b><small>'+data.products.length+' منتج · أسعار الجملة · الدفع عند الاستلام</small></div><a class="chshop" href="/">المتجر</a></header>'+
+    '<nav class="chcats">'+cats.map(function(c){return '<button data-act="ccat" data-v="'+esc(c)+'" aria-pressed="'+((S.ccat||"")===c)+'">'+(c?esc(c):'الكل')+'</button>'}).join("")+'</nav>'+
+    '<div class="chfeed"><div class="chpin">📌 اضغط <b>⬇️ تحميل</b> تحت أي صورة لحفظها في هاتفك، واختر ما يعجبك بـ <b>✓ أريد هذا</b> ثم اضغط <b>اطلب عبر واتساب</b> في الأسفل. أقل طلبية '+minQ()+' قطع.</div>'+
+    list.map(chPost).join("")+'</div>'+
+    '<div class="chbar"><a class="chwa" data-act="cwa" href="'+esc(chWaUrl())+'" target="_blank" rel="noopener">💬 اطلب عبر واتساب'+(n?' <span>('+n+' منتج)</span>':'')+'</a></div></div>'}
+  function chImgs(p){var ims=p.imgs&&p.imgs.length?p.imgs:[{u:p.img,c:""}];return ims.filter(function(m){return m&&m.u})}
+  function chPost(p){var ims=chImgs(p),r=priceRange(p),v=r?r[0]:p.price,on=!!(S.cs||{})[p.id],o=options(p),c=ctnOf(p);
+    var alb='<div class="chalb n'+Math.min(ims.length,4)+'">'+ims.map(function(m,i){var lb=isModel(p)?(String(m.c||"").trim()||String(i+1)):String(m.c||"").trim();
+      return '<figure><img loading="lazy" decoding="async" src="'+esc(th(src1(p,m.u)))+'" alt="'+esc(p.ref)+'">'+(lb&&ims.length>1?'<span class="chlb">'+esc(isModel(p)?"موديل "+lb:lb)+'</span>':'')+
+      '<button class="chdl" data-act="cdl" data-u="'+esc(src1(p,m.u))+'" data-n="'+esc(p.ref+(lb?"-"+lb:"")+(ims.length>1&&!lb?"-"+(i+1):""))+'">⬇️ تحميل</button></figure>'}).join("")+'</div>';
+    return '<article class="chpost'+(on?' on':'')+'">'+alb+'<div class="chcap"><div><b dir="ltr" class="chref">'+esc(p.ref)+'</b>'+(p.name?' · '+esc(p.name):'')+'</div>'+
+      '<div class="chpr">💰 '+(r?'من ':'')+fmt(v)+' لل'+uw(p)+' <small>('+cts(v)+')</small></div>'+
+      (c?'<div>📦 بالكرطون ('+c.qty+' '+uw(p)+'): ال'+uw(p)+' بـ '+fmt(Math.round(c.price/c.qty))+'</div>':'')+
+      (o.length?'<div>🎨 '+esc(isModel(p)?o.length+" موديلات":o.join("، "))+'</div>':'')+(+p.stems>1?'<div>🌹 عدد الورد: '+p.stems+'</div>':'')+
+      '<button class="chsel" data-act="csel" data-id="'+p.id+'" aria-pressed="'+on+'">'+(on?'✅ اخترته':'✓ أريد هذا')+'</button></div></article>'}
+  function chWaUrl(){var cs=S.cs||{},ids=Object.keys(cs),t="السلام عليكم 🌹\nأريد الطلب من قناة "+(data.shop.name||"ورد الجملة");
+    if(ids.length)t+=":\n"+ids.map(function(id){var p=byId(id);if(!p)return "";var r=priceRange(p),v=r?r[0]:p.price;return "• "+p.ref+(p.name?" ("+p.name+")":"")+" — "+fmt(v)+" لل"+uw(p)}).filter(Boolean).join("\n")+"\n\nالكميات والألوان: ";
+    else t+=".\nسأرسل لكم صور المنتجات التي أريدها.";
+    return "https://wa.me/"+waPhone()+"?text="+encodeURIComponent(t)}
+  async function chDl(u,name,b){var fn=String(name||"photo").replace(/[^A-Za-z0-9؀-ۿ_-]+/g,"-")+".jpg";b.disabled=true;var old=b.textContent;b.textContent="⏳ جارٍ التحميل…";
+    try{var r=await fetch(u,{mode:"cors"});if(!r.ok)throw 0;var bl=await r.blob(),f=new File([bl],fn,{type:bl.type||"image/jpeg"});
+      if(navigator.canShare&&navigator.canShare({files:[f]})&&/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)){try{await navigator.share({files:[f]})}catch(x){}}
+      else{var a=document.createElement("a"),ou=URL.createObjectURL(bl);a.href=ou;a.download=fn;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(ou);a.remove()},1500)}
+      b.textContent="✅ تم";TK("dl",{n:name})}
+    catch(x){window.open(u,"_blank");b.textContent=old}
+    setTimeout(function(){b.disabled=false;b.textContent=old},2200)}
+  app.addEventListener("click",function(e){if(!S.chan)return;var b=e.target.closest&&e.target.closest("[data-act]");if(!b)return;var a=b.dataset.act;
+    if(a==="cdl"){e.preventDefault();e.stopPropagation();chDl(b.dataset.u,b.dataset.n,b)}
+    else if(a==="csel"){e.stopPropagation();S.cs=S.cs||{};var id=b.dataset.id;if(S.cs[id])delete S.cs[id];else{S.cs[id]=1;TK("pick",{ref:(byId(id)||{}).ref})}var y=window.scrollY;render();window.scrollTo(0,y)}
+    else if(a==="ccat"){e.stopPropagation();S.ccat=b.dataset.v;render();window.scrollTo(0,0);TK("cat",{c:S.ccat||""})}
+    else if(a==="cwa"){var ids=Object.keys(S.cs||{});TK("wa",{n:ids.length,refs:ids.map(function(id){return (byId(id)||{}).ref}).slice(0,30)})}},true);
 })();
 </script>
 </body></html>

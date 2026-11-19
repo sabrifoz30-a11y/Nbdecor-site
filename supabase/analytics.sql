@@ -20,7 +20,7 @@ begin
   select store, vid, sid, x->>'e', case when jsonb_typeof(x->'d') = 'object' then x->'d' end,
          case when (x->>'t') ~ '^[0-9]{12,14}$' and abs((x->>'t')::bigint/1000 - extract(epoch from now())) < 600 then to_timestamp((x->>'t')::bigint/1000.0) else now() end
   from jsonb_array_elements(evs) x
-  where x->>'e' in ('visit','cat','search','view','add','cart','fill','send','order','fail','howto','help','leave','shop');
+  where x->>'e' in ('visit','cat','search','view','add','cart','fill','send','order','fail','howto','help','leave','shop','dl','pick','wa');
 end $$;
 revoke all on function public.track(text, text, text, jsonb) from public;
 grant execute on function public.track(text, text, text, jsonb) to anon, authenticated;
