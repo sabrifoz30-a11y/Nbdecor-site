@@ -482,7 +482,7 @@ function miniOpts(p){var o=options(p);if(o.length<2)return "";var max=isModel(p)
     return '<button class="mopt'+(isModel(p)?' mth':'')+'" data-act="openp" data-id="'+p.id+'" data-c="'+esc(c)+'" aria-label="'+esc(optLabel(p,c))+'" title="'+esc(c)+'">'+inner+'</button>'}).join("");
   return '<div class="mopts">'+it+(more>0?'<button class="mopt mmore" data-act="openp" data-id="'+p.id+'">+'+more+'</button>':'')+'</div><span class="mcnt">'+optWord(p,o.length)+'</span>'}
 function miniCard(p){var ims=p.imgs&&p.imgs.length?p.imgs:[{u:p.img,c:""}],r=priceRange(p),v=r?r[0]:p.price;
-  return '<article class="mini" data-act="openp" data-id="'+p.id+'"><div class="mph"><img loading="lazy" decoding="async" src="'+esc(th(src1(p,ims[0].u)))+'" alt="منتج '+esc(p.ref)+'">'+pbadge(p)+(ims.length>1?'<span class="mimgs">'+ims.length+' صور</span>':'')+'</div>'+
+  return '<article class="mini" data-act="openp" data-id="'+p.id+'"><div class="mph"><img loading="lazy" decoding="async" src="'+esc(src1(p,ims[0].u))+'" alt="منتج '+esc(p.ref)+'">'+pbadge(p)+(ims.length>1?'<span class="mimgs">'+ims.length+' صور</span>':'')+'</div>'+
   '<div class="mbody">'+(p.name?'<b class="mname">'+esc(p.name)+'</b>':'')+'<span class="mref">'+esc(p.ref)+'</span><span class="mprice">'+(r?'من ':'')+fmt(v)+' <small>لل'+uw(p)+'</small></span>'+miniOpts(p)+(ctnOf(p)?'<span class="mctn">📦 كرطون متوفر</span>':'')+'</div></article>'}
 function productPage(p){var n=cartCount();return '<main class="wrap ppage"><button class="pback" data-act="closep">→ رجوع إلى كل المنتجات</button><div class="grid pone">'+card(p)+'</div></main>'+
   (n?'<div class="floatbar"><button class="btn btn-petal" data-act="go" data-v="cart"><b>🛒 لإتمام الطلب اضغط هنا ←</b><span>في سلتك '+n+' قطعة · '+fmt(cartTotal())+'</span></button></div>':'')}
@@ -992,7 +992,7 @@ function channelView(){var all=chAll();if(!all)return '<div class="chan"><header
   function chImgs(p){var ims=p.imgs&&p.imgs.length?p.imgs:[{u:p.img,c:""}];return ims.filter(function(m){return m&&m.u})}
   function chPost(p){var ims=chImgs(p),r=priceRange(p),v=r?r[0]:p.price,on=!!(S.cs||{})[p.id],o=options(p),c=ctnOf(p);
     var alb='<div class="chalb n'+Math.min(ims.length,4)+'">'+ims.map(function(m,i){var lb=isModel(p)?(String(m.c||"").trim()||String(i+1)):String(m.c||"").trim();
-      return '<figure><img loading="lazy" decoding="async" src="'+esc(th(src1(p,m.u)))+'" alt="'+esc(p.ref)+'">'+(lb&&ims.length>1?'<span class="chlb">'+esc(isModel(p)?"موديل "+lb:lb)+'</span>':'')+
+      return '<figure><img loading="lazy" decoding="async" src="'+esc(src1(p,m.u))+'" alt="'+esc(p.ref)+'">'+(lb&&ims.length>1?'<span class="chlb">'+esc(isModel(p)?"موديل "+lb:lb)+'</span>':'')+
       '<button class="chdl" data-act="cdl" data-u="'+esc(src1(p,m.u))+'" data-n="'+esc(p.ref+(lb?"-"+lb:"")+(ims.length>1&&!lb?"-"+(i+1):""))+'">⬇️ تحميل</button></figure>'}).join("")+'</div>';
     return '<article class="chpost'+(on?' on':'')+'">'+alb+'<div class="chcap"><div><b dir="ltr" class="chref">'+esc(p.ref)+'</b>'+(p.name?' · '+esc(p.name):'')+'</div>'+
       '<div class="chpr">💰 '+(r?'من ':'')+fmt(v)+' لل'+uw(p)+' <small>('+cts(v)+')</small></div>'+
